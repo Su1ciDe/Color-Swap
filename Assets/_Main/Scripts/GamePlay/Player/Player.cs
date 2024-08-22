@@ -1,4 +1,5 @@
 using Fiber.Managers;
+using Interfaces;
 using UnityEngine;
 
 namespace GamePlay.Player
@@ -8,6 +9,13 @@ namespace GamePlay.Player
 	/// </summary>
 	public class Player : MonoBehaviour
 	{
+		public IInputs Inputs { get; private set; }
+
+		private void Awake()
+		{
+			Inputs = GetComponent<IInputs>();
+		}
+
 		private void OnEnable()
 		{
 			LevelManager.OnLevelLoad += OnLevelLoaded;
