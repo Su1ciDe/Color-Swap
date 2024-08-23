@@ -3,7 +3,6 @@ using Fiber.Managers;
 using Fiber.Utilities;
 using Fiber.Utilities.Extensions;
 using GamePlay.Obstacles;
-using Interfaces;
 using TriInspector;
 using UnityEditor;
 using UnityEngine;
@@ -18,11 +17,15 @@ namespace GridSystem
 		[field: Title("Properties")]
 		[field: SerializeField, ReadOnly] public Vector2Int Coordinates { get; set; }
 		[field: SerializeField, ReadOnly] public CellType CellType { get; set; }
+		[field: SerializeField, ReadOnly] public Node CurrentNode { get; set; }
+		[field: SerializeField, ReadOnly] public CellObstacle CurrentObstacle { get; set; }
 
-		[field: SerializeField, ReadOnly] public INode CurrentNode { get; set; }
+		// [field: SerializeField, ReadOnly] public INode CurrentNode { get; set; }
 
 		[Title("References")]
 		[SerializeField, PropertySpace(spaceAfter: 10)] private Transform nodeHolder;
+
+		#region Setup
 
 #if UNITY_EDITOR
 		[Group("Setup"), HideLabel, InlineProperty] [SerializeField] private NodeOption nodeOptions;
@@ -41,6 +44,8 @@ namespace GridSystem
 				{
 					var obs = (CellObstacle)PrefabUtility.InstantiatePrefab(obstacle, nodeHolder);
 					obs.Setup(this);
+					CurrentObstacle = obs;
+					SceneVisibilityManager.instance.DisablePicking(obs.gameObject, true);
 				}
 				else if (obstacle is NodeObstacle)
 				{
@@ -89,5 +94,14 @@ namespace GridSystem
 			return obstacle;
 		}
 #endif
+
+		#endregion
+
+		public void SetNode(Node node)
+		{
+			CurrentNode = node;
+			node.CurrentGridCell = this;
+			node.transform.SetParent(transform);
+		}
 	}
 }

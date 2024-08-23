@@ -8,7 +8,7 @@ using UnityEngine.Events;
 
 namespace GamePlay.Player
 {
-	public class PlayerInputs : MonoBehaviour, IInputs
+	public class PlayerInputs : MonoBehaviour
 	{
 		public bool CanInput { get; set; }
 		
@@ -16,9 +16,9 @@ namespace GamePlay.Player
 
 		private GridCell selectedCell;
 
-		public event UnityAction<GridCell> OnDown;
-		public event UnityAction<GridCell> OnMove;
-		public event UnityAction<GridCell> OnUp;
+		public static event UnityAction<GridCell> OnDown;
+		public static  event UnityAction<GridCell> OnMove;
+		public static  event UnityAction<GridCell> OnUp;
 
 		private void Awake()
 		{

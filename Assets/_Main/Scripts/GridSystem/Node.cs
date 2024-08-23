@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using AYellowpaper.SerializedCollections;
+using DG.Tweening;
 using Fiber.Managers;
 using GamePlay.Obstacles;
 using Interfaces;
@@ -16,6 +19,7 @@ namespace GridSystem
 
 		[field: SerializeField, ReadOnly] public NodeObstacle Obstacle { get; set; }
 		[field: SerializeField, ReadOnly] public NodeTileMatrix Tiles { get; set; }
+		[field: SerializeField, ReadOnly] public SerializedDictionary<TileType, List<Vector2Int>> TilesDictionary { get; set; } = new SerializedDictionary<TileType, List<Vector2Int>>();
 
 		[Title("Parameters")]
 		[SerializeField] private float jumpPower = 5;
@@ -30,7 +34,40 @@ namespace GridSystem
 		private const float ACCELERATION = .5f;
 		private const float TILE_SIZE = .5F;
 
+		public Tween JumpTo(Vector3 position)
+		{
+			return transform.DOJump(position, jumpPower, 1, jumpDuration);
+		}
+
+		public void OnObstacleDestroyed()
+		{
+			Obstacle = null;
+		}
+
 		public Transform GetTransform() => transform;
+
+		#region Helpers
+
+		public NodeTile GetTile(int x, int y)
+		{
+			return Tiles[x, y];
+		}
+
+		public NodeTile GetTile(Vector2Int coordinate)
+		{
+			return Tiles[coordinate.x, coordinate.y];
+		}
+
+		public IEnumerable<NodeTile> GetAllTiles()
+		{
+			for (int x = 0; x < Tiles.GetLength(0); x++)
+			{
+				for (int y = 0; y < Tiles.GetLength(1); y++)
+					yield return Tiles[x, y];
+			}
+		}
+
+		#endregion
 
 		#region Setup
 
@@ -50,28 +87,42 @@ namespace GridSystem
 				for (int y = 0; y < size.y; y++)
 				{
 					var nodeType = nodeOption.Nodes.GetCell(x, y);
-					if (x - 1 >= 0 && nodeType == Tiles[x - 1, y].NodeType)
+					if (x - 1 >= 0 && nodeType == Tiles[x - 1, y].TileType)
 					{
 						var leftTile = Tiles[x - 1, y];
 						leftTile.transform.localScale = new Vector3(TILE_SIZE * 2, leftTile.transform.localScale.y, leftTile.transform.localScale.z);
 						leftTile.transform.localPosition = new Vector3(0, leftTile.transform.localPosition.y, leftTile.transform.localPosition.z);
+						leftTile.Size = new Vector2(leftTile.transform.localScale.x, leftTile.transform.localScale.z);
 						Tiles[x, y] = leftTile;
+						TilesDictionary[nodeType].Add(new Vector2Int(x, y));
 						continue;
 					}
 
-					if (y - 1 >= 0 && nodeType == Tiles[x, y - 1].NodeType)
+					if (y - 1 >= 0 && nodeType == Tiles[x, y - 1].TileType)
 					{
 						var upTile = Tiles[x, y - 1];
 						upTile.transform.localScale = new Vector3(upTile.transform.localScale.x, upTile.transform.localScale.y, TILE_SIZE * 2);
 						upTile.transform.localPosition = new Vector3(upTile.transform.localPosition.x, upTile.transform.localPosition.y, 0);
+						upTile.Size = new Vector2(upTile.transform.localScale.x, upTile.transform.localScale.z);
 						Tiles[x, y] = upTile;
+						TilesDictionary[nodeType].Add(new Vector2Int(x, y));
 						continue;
 					}
 
-					var tile = (NodeTile)PrefabUtility.InstantiatePrefab(GameManager.Instance.PrefabsSO.NodeTilePrefab, tileHolder);
+					NodeTile tile = null;
+#if UNITY_EDITOR
+					if (Application.isPlaying)
+						tile = Instantiate(GameManager.Instance.PrefabsSO.NodeTilePrefab, tileHolder);
+					else
+						tile = (NodeTile)PrefabUtility.InstantiatePrefab(GameManager.Instance.PrefabsSO.NodeTilePrefab, tileHolder);
+#else
+						tile = Instantiate(GameManager.Instance.PrefabsSO.NodeTilePrefab, tileHolder);
+#endif
 					tile.transform.localScale = TILE_SIZE * Vector3.one;
 					tile.transform.localPosition = new Vector3(x * TILE_SIZE + -xOffset, 0, -y * TILE_SIZE + yOffset);
-					tile.Setup(nodeType);
+					tile.Size = TILE_SIZE * Vector2.one;
+					tile.Setup(this, nodeType);
+					TilesDictionary.Add(nodeType, new List<Vector2Int> { new Vector2Int(x, y) });
 
 					Tiles[x, y] = tile;
 				}

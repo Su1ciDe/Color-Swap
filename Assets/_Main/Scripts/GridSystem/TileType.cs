@@ -1,6 +1,6 @@
 namespace GridSystem
 {
-	public enum NodeType
+	public enum TileType
 	{
 		_1Blue,
 		_2Green,

@@ -114,6 +114,17 @@ namespace Fiber.Utilities.Extensions
 			list.Add(item);
 			return true;
 		}
+		
+		public static bool AddRangeIfNotContains<T>(this IList<T> list, IEnumerable<T> collection)
+		{
+			var added = false;
+			foreach (var item in collection)
+			{
+				if (list.AddIfNotContains(item))
+					added = true;
+			}
+			return added;
+		}
 
 		/// <summary>
 		/// Picks a random item from the list.

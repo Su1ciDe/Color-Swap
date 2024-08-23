@@ -189,7 +189,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3032955989202528575, guid: 706b950c64e8c4696b03b654427f20fe, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -5.25
       objectReference: {fileID: 0}
     - target: {fileID: 3032955989202528575, guid: 706b950c64e8c4696b03b654427f20fe, type: 3}
       propertyPath: m_LocalRotation.w
@@ -222,6 +222,14 @@ PrefabInstance:
     - target: {fileID: 4561125461035380721, guid: 706b950c64e8c4696b03b654427f20fe, type: 3}
       propertyPath: m_Name
       value: Deck
+      objectReference: {fileID: 0}
+    - target: {fileID: 5189357601322927386, guid: 706b950c64e8c4696b03b654427f20fe, type: 3}
+      propertyPath: a.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5189357601322927386, guid: 706b950c64e8c4696b03b654427f20fe, type: 3}
+      propertyPath: a.y
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

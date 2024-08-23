@@ -13,5 +13,15 @@ namespace GamePlay.Obstacles
 		{
 			CurrentNode = node;
 		}
+
+		public override void DestroyObstacle()
+		{
+			if (CurrentNode)
+			{
+				CurrentNode.OnObstacleDestroyed();
+			}
+			
+			base.DestroyObstacle();
+		}
 	}
 }
