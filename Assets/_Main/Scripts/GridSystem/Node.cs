@@ -1,18 +1,23 @@
 using System.Collections.Generic;
+using System.Linq;
 using AYellowpaper.SerializedCollections;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Fiber.Managers;
+using Fiber.Utilities.Extensions;
 using GamePlay.Obstacles;
 using Interfaces;
 using TriInspector;
 using UnityEditor;
 using UnityEngine;
+using Utilities;
 
 namespace GridSystem
 {
 	public class Node : MonoBehaviour, INode
 	{
-		public bool IsFalling { get; set; }
+		public bool IsFalling { get; private set; }
+		public bool IsRearranging { get; private set; }
 
 		[field: Title("Properties")]
 		[field: SerializeField, ReadOnly] public GridCell CurrentGridCell { get; set; }
@@ -28,7 +33,7 @@ namespace GridSystem
 		[Title("References")]
 		[SerializeField] private Transform tileHolder;
 
-		private float velocity;
+		public float Velocity { get; private set; }
 
 		private const float FALL_SPEED = 20f;
 		private const float ACCELERATION = .5f;
@@ -39,9 +44,158 @@ namespace GridSystem
 			return transform.DOJump(position, jumpPower, 1, jumpDuration);
 		}
 
+		public void PlaceToGrid(GridCell gridCell)
+		{
+			if (gridCell)
+			{
+				CurrentGridCell = gridCell;
+				CurrentGridCell.CurrentNode = this;
+			}
+		}
+
+		public void SwapCell(GridCell gridCell)
+		{
+			if (CurrentGridCell)
+				CurrentGridCell.CurrentNode = null;
+
+			PlaceToGrid(gridCell);
+		}
+
 		public void OnObstacleDestroyed()
 		{
 			Obstacle = null;
+		}
+
+		public void OnTileBlast(NodeTile nodeTile)
+		{
+			if (!TilesDictionary.TryGetValue(nodeTile.TileType, out var coordinates)) return;
+			for (var i = 0; i < coordinates.Count; i++)
+				Tiles[coordinates[i].x, coordinates[i].y] = null;
+
+			TilesDictionary.Remove(nodeTile.TileType);
+		}
+
+		public async void Rearrange()
+		{
+			if (IsRearranging) return;
+			IsRearranging = true;
+			var tileCount = GetTileCount();
+			if (tileCount.Equals(0))
+			{
+				IsRearranging = false;
+				if (CurrentGridCell)
+				{
+					CurrentGridCell.CurrentNode = null;
+					CurrentGridCell = null;
+				}
+
+				Destroy(gameObject);
+
+				return;
+			}
+
+			await UniTask.WaitForSeconds(0.2f);
+
+			for (int x = 0; x < Tiles.GetLength(0); x++)
+			{
+				for (int y = 0; y < Tiles.GetLength(1); y++)
+				{
+					var tile = Tiles[x, y];
+					if (!tile) continue;
+
+					if (TilesDictionary[tile.TileType].Count < 2)
+					{
+						if (x + 1 < 2 && !Tiles[x + 1, y])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x * 2, tile.transform.localScale.y, tile.transform.localScale.z),
+								new Vector3(0, tile.transform.localPosition.y, tile.transform.localPosition.z));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x + 1, y));
+							Tiles[x + 1, y] = tile;
+						}
+
+						if (y + 1 < 2 && !Tiles[x, y + 1])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x, tile.transform.localScale.y, tile.transform.localScale.z * 2),
+								new Vector3(tile.transform.localPosition.x, tile.transform.localPosition.y, 0));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x, y + 1));
+							Tiles[x, y + 1] = tile;
+						}
+
+						if (x - 1 >= 0 && !Tiles[x - 1, y])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x * 2, tile.transform.localScale.y, tile.transform.localScale.z),
+								new Vector3(0, tile.transform.localPosition.y, tile.transform.localPosition.z));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x - 1, y));
+							Tiles[x - 1, y] = tile;
+						}
+
+						if (y - 1 >= 0 && !Tiles[x, y - 1])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x, tile.transform.localScale.y, tile.transform.localScale.z * 2),
+								new Vector3(tile.transform.localPosition.x, tile.transform.localPosition.y, 0));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x, y - 1));
+							Tiles[x, y - 1] = tile;
+						}
+					}
+
+					if (TilesDictionary.Count.Equals(1))
+					{
+						tile.Grow(Vector3.one, Vector3.zero);
+						TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x, y));
+						Tiles[x, y] = tile;
+					}
+				}
+			}
+
+			IsRearranging = false;
+		}
+
+		public async UniTask Fall(Vector3 position)
+		{
+			await UniTask.WaitUntil(() => !IsFalling);
+
+			IsFalling = true;
+			var currentPos = transform.position;
+			while (currentPos.z > position.z)
+			{
+				Velocity += ACCELERATION;
+				Velocity = Velocity >= FALL_SPEED ? FALL_SPEED : Velocity;
+
+				currentPos = transform.position;
+
+				currentPos.z -= Velocity * Time.deltaTime;
+				transform.position = currentPos;
+
+				await UniTask.Yield();
+			}
+
+			currentPos.z = position.z;
+			transform.position = currentPos;
+			Velocity = 0;
+
+			IsFalling = false;
+		}
+
+		private void CheckObstacles()
+		{
+			var dirCount = Direction.Directions.Length;
+			for (int i = 0; i < dirCount; i++)
+			{
+				var dir = CurrentGridCell.Coordinates + Direction.Directions[i];
+				if (!GridManager.Instance.IsInGridBoundaries(dir)) continue;
+				var cell = GridManager.Instance.GetCell(dir);
+				if (!cell) continue;
+
+				if (cell.CurrentNode && cell.CurrentNode.Obstacle)
+				{
+					cell.CurrentNode.Obstacle.OnBlastNear(this);
+				}
+
+				if (cell.CurrentObstacle)
+				{
+					cell.CurrentObstacle.OnBlastNear(this);
+				}
+			}
 		}
 
 		public Transform GetTransform() => transform;
@@ -65,6 +219,21 @@ namespace GridSystem
 				for (int y = 0; y < Tiles.GetLength(1); y++)
 					yield return Tiles[x, y];
 			}
+		}
+
+		public int GetTileCount()
+		{
+			int count = 0;
+			for (int x = 0; x < Tiles.GetLength(0); x++)
+			{
+				for (int y = 0; y < Tiles.GetLength(1); y++)
+				{
+					if (Tiles[x, y])
+						count++;
+				}
+			}
+
+			return count;
 		}
 
 		#endregion
