@@ -8,10 +8,10 @@ namespace Interfaces
 	{
 		public bool IsFalling { get; }
 		public GridCell CurrentGridCell { get; set; }
-		public  UniTask Fall(Vector3 targetPosition);
 		public float Velocity { get; }
 
-
 		public Transform GetTransform();
+		public void SwapCell(GridCell cell);
+		public UniTask Fall(Vector3 targetPosition);
 	}
 }

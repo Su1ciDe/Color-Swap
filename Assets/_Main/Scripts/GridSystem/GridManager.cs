@@ -5,6 +5,7 @@ using Fiber.Managers;
 using Fiber.Utilities;
 using Fiber.Utilities.Extensions;
 using GamePlay.Player;
+using Interfaces;
 using Lofelt.NiceVibrations;
 using TriInspector;
 using UnityEditor;
@@ -175,7 +176,7 @@ namespace GridSystem
 		private async UniTask Fall()
 		{
 			UniTask? task = null;
-			var fallingNodes = new List<Node>();
+			var fallingNodes = new List<INode>();
 			for (int x = 0; x < size.x; x++)
 			{
 				for (int y = size.y - 1; y >= 0; y--)
@@ -183,8 +184,13 @@ namespace GridSystem
 					var cell = gridCells[x, y];
 					if (!cell) continue;
 					if (cell.CellType == CellType.Empty) continue;
-					if (!cell.CurrentNode) continue;
-					var node = cell.CurrentNode;
+					INode node;
+					if (cell.CurrentNode)
+						node = cell.CurrentNode;
+					else if (cell.CurrentObstacle)
+						node = cell.CurrentObstacle;
+					else
+						continue;
 
 					// Check if there is any empty cell under
 					int emptyY = GetFirstEmptyRow(x, y);
@@ -204,7 +210,7 @@ namespace GridSystem
 			await CheckBlastAfterFalling(fallingNodes);
 		}
 
-		private async void GetFallingNodes(Node node, List<Node> fallingNodes)
+		private async void GetFallingNodes(INode node, List<INode> fallingNodes)
 		{
 			await UniTask.Yield();
 
@@ -212,7 +218,7 @@ namespace GridSystem
 				fallingNodes.Add(node);
 		}
 
-		private async UniTask CheckBlastAfterFalling(List<Node> fallingNodes)
+		private async UniTask CheckBlastAfterFalling(List<INode> fallingNodes)
 		{
 			UniTask? task = null;
 			for (int i = 0; i < fallingNodes.Count; i++)
@@ -224,7 +230,6 @@ namespace GridSystem
 
 		private async UniTask Fill()
 		{
-			UniTask? task = null;
 			for (int x = 0; x < size.x; x++)
 			{
 				var emptyRowCount = GetEmptyRows(x);
@@ -237,13 +242,11 @@ namespace GridSystem
 					node.transform.position = gridCells[x, 0].transform.position + new Vector3(0, 0, 1.5f);
 
 					node.PlaceToGrid(gridCells[x, emptyCellY]);
-					task = node.Fall(gridCells[x, emptyCellY].transform.position);
+					node.Fall(gridCells[x, emptyCellY].transform.position);
 				}
 			}
 
 			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
-			// if (task is not null)
-			// 	await (UniTask)task;
 		}
 
 		#region Spawn

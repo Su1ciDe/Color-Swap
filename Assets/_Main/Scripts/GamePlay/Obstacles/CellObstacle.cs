@@ -47,5 +47,28 @@ namespace GamePlay.Obstacles
 		}
 
 		public Transform GetTransform() => transform;
+
+		public void PlaceToGrid(GridCell gridCell)
+		{
+			if (gridCell)
+			{
+				CurrentGridCell = gridCell;
+				CurrentGridCell.CurrentObstacle = this;
+				if (CurrentGridCell.CurrentNode)
+					CurrentGridCell.CurrentNode = null;
+			}
+		}
+
+		public void SwapCell(GridCell gridCell)
+		{
+			if (CurrentGridCell)
+			{
+				if (CurrentGridCell.CurrentNode)
+					CurrentGridCell.CurrentNode = null;
+				CurrentGridCell.CurrentObstacle = null;
+			}
+
+			PlaceToGrid(gridCell);
+		}
 	}
 }

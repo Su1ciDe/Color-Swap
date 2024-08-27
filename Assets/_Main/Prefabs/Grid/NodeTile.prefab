@@ -45,7 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 099d32b805044febb9bbe796309c5ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  modelRenderer: {fileID: 7762296314408507537}
+  <Node>k__BackingField: {fileID: 0}
+  <TileType>k__BackingField: 0
+  <Size>k__BackingField: {x: 0, y: 0}
+  modelRenderer: {fileID: 6285760442832943318}
 --- !u!1 &8004157241349008847
 GameObject:
   m_ObjectHideFlags: 0
@@ -135,9 +138,9 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
---- !u!137 &7762296314408507537 stripped
+--- !u!137 &6285760442832943318 stripped
 SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4304722294194249207, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_CorrespondingSourceObject: {fileID: 522352206125596080, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
   m_PrefabInstance: {fileID: 5765809571092464998}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8629047524172025397 stripped
