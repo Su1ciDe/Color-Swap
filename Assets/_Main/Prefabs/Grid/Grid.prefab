@@ -128,8 +128,8 @@ MonoBehaviour:
       - {fileID: 0}
   cellHolder: {fileID: 1943353250886401148}
   nodeSize: {x: 1, y: 1}
-  xSpacing: 0.1
-  ySpacing: 0.1
+  xSpacing: 0.05
+  ySpacing: 0.05
   size: {x: 6, y: 7}
   grid:
     gridSize: {x: 6, y: 7}
@@ -142,3 +142,19 @@ MonoBehaviour:
     - row: 000000000000000000000000000000000000000000000000
     - row: 000000000000000000000000000000000000000000000000
     - row: 000000000000000000000000000000000000000000000000
+  spawner:
+  - Nodes:
+      gridSize: {x: 2, y: 2}
+      cellSize: {x: 64, y: 16}
+      cells:
+      - row: 0000000000000000
+      - row: 0000000000000000
+    Weight: 0
+  - Nodes:
+      gridSize: {x: 2, y: 2}
+      cellSize: {x: 64, y: 16}
+      cells:
+      - row: 0000000000000000
+      - row: 0000000000000000
+    Weight: 0
+  random: []

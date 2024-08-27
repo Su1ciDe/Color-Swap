@@ -1,18 +1,23 @@
 using System.Collections.Generic;
+using System.Linq;
 using AYellowpaper.SerializedCollections;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Fiber.Managers;
+using Fiber.Utilities.Extensions;
 using GamePlay.Obstacles;
 using Interfaces;
 using TriInspector;
 using UnityEditor;
 using UnityEngine;
+using Utilities;
 
 namespace GridSystem
 {
 	public class Node : MonoBehaviour, INode
 	{
-		public bool IsFalling { get; set; }
+		public bool IsFalling { get; private set; }
+		public bool IsRearranging { get; private set; }
 
 		[field: Title("Properties")]
 		[field: SerializeField, ReadOnly] public GridCell CurrentGridCell { get; set; }
@@ -28,20 +33,186 @@ namespace GridSystem
 		[Title("References")]
 		[SerializeField] private Transform tileHolder;
 
-		private float velocity;
+		public float Velocity { get; private set; }
 
 		private const float FALL_SPEED = 20f;
 		private const float ACCELERATION = .5f;
 		private const float TILE_SIZE = .5F;
+
+		private void OnDestroy()
+		{
+		}
 
 		public Tween JumpTo(Vector3 position)
 		{
 			return transform.DOJump(position, jumpPower, 1, jumpDuration);
 		}
 
+		public void PlaceToGrid(GridCell gridCell)
+		{
+			if (gridCell)
+			{
+				CurrentGridCell = gridCell;
+				CurrentGridCell.CurrentNode = this;
+			}
+		}
+
+		public void SwapCell(GridCell gridCell)
+		{
+			if (CurrentGridCell)
+				CurrentGridCell.CurrentNode = null;
+
+			PlaceToGrid(gridCell);
+		}
+
 		public void OnObstacleDestroyed()
 		{
 			Obstacle = null;
+		}
+
+		public void OnTileBlast(NodeTile nodeTile)
+		{
+			if (!TilesDictionary.TryGetValue(nodeTile.TileType, out var coordinates)) return;
+			for (var i = 0; i < coordinates.Count; i++)
+				Tiles[coordinates[i].x, coordinates[i].y] = null;
+
+			TilesDictionary.Remove(nodeTile.TileType);
+		}
+
+		public async void Rearrange()
+		{
+			if (IsRearranging) return;
+			IsRearranging = true;
+			var tileCount = GetTileCount();
+			if (tileCount.Equals(0))
+			{
+				if (CurrentGridCell)
+				{
+					CurrentGridCell.CurrentNode = null;
+					CurrentGridCell = null;
+				}
+
+				if (gameObject)
+					Destroy(gameObject);
+
+				return;
+			}
+
+			await UniTask.WaitForSeconds(0.1f);
+
+			for (int x = 0; x < Tiles.GetLength(0); x++)
+			{
+				for (int y = 0; y < Tiles.GetLength(1); y++)
+				{
+					var tile = Tiles[x, y];
+					if (!tile) continue;
+					if (TilesDictionary.Count.Equals(1))
+					{
+						tile.Grow(new Vector3(1, 0.5f, 1), Vector3.zero);
+
+						for (int x1 = 0; x1 < Tiles.GetLength(0); x1++)
+						{
+							for (int y1 = 0; y1 < Tiles.GetLength(1); y1++)
+							{
+								TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x1, y1));
+								Tiles[x1, y1] = tile;
+							}
+						}
+					}
+
+					if (TilesDictionary[tile.TileType].Count < 2)
+					{
+						if (x + 1 < 2 && !Tiles[x + 1, y])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x * 2, tile.transform.localScale.y, tile.transform.localScale.z),
+								new Vector3(0, tile.transform.localPosition.y, tile.transform.localPosition.z));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x + 1, y));
+							Tiles[x + 1, y] = tile;
+						}
+
+						if (y + 1 < 2 && !Tiles[x, y + 1])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x, tile.transform.localScale.y, tile.transform.localScale.z * 2),
+								new Vector3(tile.transform.localPosition.x, tile.transform.localPosition.y, 0));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x, y + 1));
+							Tiles[x, y + 1] = tile;
+						}
+
+						if (x - 1 >= 0 && !Tiles[x - 1, y])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x * 2, tile.transform.localScale.y, tile.transform.localScale.z),
+								new Vector3(0, tile.transform.localPosition.y, tile.transform.localPosition.z));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x - 1, y));
+							Tiles[x - 1, y] = tile;
+						}
+
+						if (y - 1 >= 0 && !Tiles[x, y - 1])
+						{
+							tile.Grow(new Vector3(tile.transform.localScale.x, tile.transform.localScale.y, tile.transform.localScale.z * 2),
+								new Vector3(tile.transform.localPosition.x, tile.transform.localPosition.y, 0));
+							TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x, y - 1));
+							Tiles[x, y - 1] = tile;
+						}
+					}
+				}
+			}
+
+			IsRearranging = false;
+
+			await UniTask.Yield();
+			await UniTask.WaitForSeconds(NodeTile.GROW_DURATION);
+			if (!IsFalling)
+				GridManager.Instance.CheckMatch3(CurrentGridCell);
+		}
+
+		public async UniTask Fall(Vector3 position)
+		{
+			if (position.Equals(transform.position)) return;
+
+			await UniTask.WaitUntil(() => !IsFalling, cancellationToken: this.GetCancellationTokenOnDestroy());
+			IsFalling = true;
+
+			var currentPos = transform.position;
+			while (gameObject && currentPos.z > position.z)
+			{
+				Velocity += ACCELERATION;
+				Velocity = Velocity >= FALL_SPEED ? FALL_SPEED : Velocity;
+
+				currentPos = transform.position;
+
+				currentPos.z -= Velocity * Time.deltaTime;
+				transform.position = currentPos;
+
+				await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
+			}
+
+			currentPos.z = position.z;
+			transform.position = currentPos;
+			Velocity = 0;
+
+			IsFalling = false;
+		}
+
+		private void CheckObstacles()
+		{
+			var dirCount = Direction.Directions.Length;
+			for (int i = 0; i < dirCount; i++)
+			{
+				var dir = CurrentGridCell.Coordinates + Direction.Directions[i];
+				if (!GridManager.Instance.IsInGridBoundaries(dir)) continue;
+				var cell = GridManager.Instance.GetCell(dir);
+				if (!cell) continue;
+
+				if (cell.CurrentNode && cell.CurrentNode.Obstacle)
+				{
+					cell.CurrentNode.Obstacle.OnBlastNear(this);
+				}
+
+				if (cell.CurrentObstacle)
+				{
+					cell.CurrentObstacle.OnBlastNear(this);
+				}
+			}
 		}
 
 		public Transform GetTransform() => transform;
@@ -67,17 +238,32 @@ namespace GridSystem
 			}
 		}
 
+		public int GetTileCount()
+		{
+			int count = 0;
+			for (int x = 0; x < Tiles.GetLength(0); x++)
+			{
+				for (int y = 0; y < Tiles.GetLength(1); y++)
+				{
+					if (Tiles[x, y])
+						count++;
+				}
+			}
+
+			return count;
+		}
+
 		#endregion
 
 		#region Setup
 
 #if UNITY_EDITOR
 
-		public void Setup(NodeOption nodeOption, GridCell gridCell)
+		public void Setup(Array2DNode nodeArray, GridCell gridCell)
 		{
 			CurrentGridCell = gridCell;
 
-			var size = nodeOption.Nodes.GridSize;
+			var size = nodeArray.GridSize;
 			var xOffset = TILE_SIZE * size.x * (size.x - 1) / 2f - TILE_SIZE / 2f;
 			var yOffset = TILE_SIZE * size.y * (size.y - 1) / 2f - TILE_SIZE / 2f;
 
@@ -86,7 +272,7 @@ namespace GridSystem
 			{
 				for (int y = 0; y < size.y; y++)
 				{
-					var nodeType = nodeOption.Nodes.GetCell(x, y);
+					var nodeType = nodeArray.GetCell(x, y);
 					if (x - 1 >= 0 && nodeType == Tiles[x - 1, y].TileType)
 					{
 						var leftTile = Tiles[x - 1, y];
@@ -134,7 +320,7 @@ namespace GridSystem
 			Obstacle = (NodeObstacle)obstacle;
 			Obstacle.Setup(this);
 
-			Setup(nodeOption, gridCell);
+			Setup(nodeOption.Nodes, gridCell);
 		}
 #endif
 

@@ -1,16 +1,20 @@
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Fiber.Managers;
 using Fiber.Utilities;
 using Fiber.Utilities.Extensions;
 using GamePlay.Player;
+using Lofelt.NiceVibrations;
 using TriInspector;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using Utilities;
 
 namespace GridSystem
 {
+	[DeclareFoldoutGroup("Randomizer")]
 	public class GridManager : Singleton<GridManager>
 	{
 		[Title("Properties")]
@@ -28,22 +32,48 @@ namespace GridSystem
 
 		[Title("Setup")]
 		[SerializeField] private Array2DGrid grid;
+		[SerializeField] private Spawner[] spawner;
+
+		private readonly List<Node> nodesToSpawn = new List<Node>();
+		private bool isFirstSpawn = true;
+		private readonly List<Node> spawnerNodes = new List<Node>();
+		private List<int> spawnerRandomWeights;
 
 		private float xOffset, yOffset;
 
 		private const int BLAST_COUNT = 3;
 
-		public async void CheckMatch3(GridCell gridCell)
+		public static event UnityAction<int> OnBlast;
+		public static event UnityAction OnAfterBlast;
+
+		private void Awake()
+		{
+			spawnerRandomWeights = spawner.Select(x => x.Weight).ToList();
+			foreach (var spawn in spawner)
+			{
+				var spawnerNode = Instantiate(GameManager.Instance.PrefabsSO.NodePrefab, transform);
+				spawnerNode.Setup(spawn.Nodes, null);
+				spawnerNode.gameObject.SetActive(false);
+				spawnerNodes.Add(spawnerNode);
+			}
+
+			CreateNewNodes();
+		}
+
+		#region Match3
+
+		public async UniTask CheckMatch3(GridCell gridCell)
 		{
 			Player.Instance.Inputs.CanInput = false;
 
 			UniTask? task = null;
+			if (gridCell.CurrentNode is null) return;
 			var node = gridCell.CurrentNode;
 			foreach (var (tileType, tileCoordinates) in node.TilesDictionary)
 			{
 				var traversedNodes = new List<Node>();
 				var match3 = FindMatch3(node, tileType, ref traversedNodes);
-				Debug.Log(traversedNodes.Count);
+
 				if (match3.nodes.Count >= BLAST_COUNT)
 				{
 					task = Blast(match3.tiles);
@@ -52,10 +82,23 @@ namespace GridSystem
 
 			await UniTask.Yield();
 
-			if (task is not null)
+			if (task is null)
 			{
+				Player.Instance.Inputs.CanInput = true;
+			}
+			else
+			{
+				HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
+
 				await (UniTask)task;
 			}
+
+			await UniTask.Yield();
+
+			OnAfterBlast?.Invoke();
+
+			await Fall();
+			await Fill();
 
 			Player.Instance.Inputs.CanInput = true;
 		}
@@ -94,6 +137,8 @@ namespace GridSystem
 						if (neighbourNode.Obstacle) continue;
 
 						var coor = tileCoordinates[i] - dirs[j];
+
+						if (!neighbourNode.GetTile(coor)) continue;
 						if (neighbourNode.GetTile(coor).TileType != tileType) continue;
 
 						var match3 = FindMatch3(neighbourNode, tileType, ref traversedNodes);
@@ -105,6 +150,8 @@ namespace GridSystem
 
 			return (nodeList, tileList);
 		}
+
+		#endregion
 
 		private async UniTask Blast(List<NodeTile> nodeTiles)
 		{
@@ -121,9 +168,163 @@ namespace GridSystem
 			{
 				await (UniTask)task;
 			}
+
+			OnBlast?.Invoke(nodeTiles.Count);
 		}
 
+		private async UniTask Fall()
+		{
+			UniTask? task = null;
+			var fallingNodes = new List<Node>();
+			for (int x = 0; x < size.x; x++)
+			{
+				for (int y = size.y - 1; y >= 0; y--)
+				{
+					var cell = gridCells[x, y];
+					if (!cell) continue;
+					if (cell.CellType == CellType.Empty) continue;
+					if (!cell.CurrentNode) continue;
+					var node = cell.CurrentNode;
+
+					// Check if there is any empty cell under
+					int emptyY = GetFirstEmptyRow(x, y);
+					if (emptyY < 0) continue;
+					if (emptyY.Equals(node.CurrentGridCell.Coordinates.y)) continue;
+					node.SwapCell(gridCells[x, emptyY]);
+					task = node.Fall(gridCells[x, emptyY].transform.position);
+					GetFallingNodes(node, fallingNodes);
+				}
+			}
+
+			if (task == null) return;
+
+			await (UniTask)task;
+			await UniTask.Yield();
+
+			await CheckBlastAfterFalling(fallingNodes);
+		}
+
+		private async void GetFallingNodes(Node node, List<Node> fallingNodes)
+		{
+			await UniTask.Yield();
+
+			if (node.IsFalling)
+				fallingNodes.Add(node);
+		}
+
+		private async UniTask CheckBlastAfterFalling(List<Node> fallingNodes)
+		{
+			UniTask? task = null;
+			for (int i = 0; i < fallingNodes.Count; i++)
+				task = CheckMatch3(fallingNodes[i].CurrentGridCell);
+
+			if (task is not null)
+				await (UniTask)task;
+		}
+
+		private async UniTask Fill()
+		{
+			UniTask? task = null;
+			for (int x = 0; x < size.x; x++)
+			{
+				var emptyRowCount = GetEmptyRows(x);
+				for (int i = 0; i < emptyRowCount; i++)
+				{
+					var emptyCellY = GetFirstEmptyRow(x, 0);
+					if (emptyCellY < 0) continue;
+
+					var node = SpawnNode();
+					node.transform.position = gridCells[x, 0].transform.position + new Vector3(0, 0, 1.5f);
+
+					node.PlaceToGrid(gridCells[x, emptyCellY]);
+					task = node.Fall(gridCells[x, emptyCellY].transform.position);
+				}
+			}
+
+			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+			// if (task is not null)
+			// 	await (UniTask)task;
+		}
+
+		#region Spawn
+
+		private Node SpawnNode()
+		{
+			if (nodesToSpawn.Count <= 0)
+				CreateNewNodes();
+
+			var node = nodesToSpawn[0];
+			nodesToSpawn.RemoveAt(0);
+			node.gameObject.SetActive(true);
+			return node;
+		}
+
+		private void CreateNewNodes()
+		{
+			for (var i = 0; i < spawnerNodes.Count; i++)
+			{
+				var node = Instantiate(spawnerNodes[i], transform);
+				nodesToSpawn.Add(node);
+			}
+
+			if (isFirstSpawn)
+				isFirstSpawn = false;
+			else
+				nodesToSpawn.Shuffle();
+		}
+
+		#endregion
+
 		#region Helpers
+
+		public int GetEmptyRows(int x)
+		{
+			int count = 0;
+			for (int y = 0; y < size.y; y++)
+			{
+				if (gridCells[x, y].CellType != CellType.Empty && gridCells[x, y].CurrentNode is null && gridCells[x, y].CurrentObstacle is null)
+					count++;
+			}
+
+			return count;
+		}
+
+		private bool IsAnyNodeFalling()
+		{
+			for (int x = 0; x < size.x; x++)
+			{
+				for (int y = 0; y < size.y; y++)
+				{
+					if (gridCells[x, y] && ((gridCells[x, y].CurrentNode && gridCells[x, y].CurrentNode.IsFalling) || (gridCells[x, y].CurrentObstacle && gridCells[x, y].CurrentObstacle.IsFalling)))
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		private int GetFirstEmptyRow(int x, int y, bool findUnderObstacle = false)
+		{
+			int yy = -1;
+			bool foundFirst = false;
+			if (findUnderObstacle)
+				y++;
+			for (int i = size.y - 1; i >= y; i--)
+			{
+				if (!foundFirst && gridCells[x, i].CellType != CellType.Empty && gridCells[x, i].CurrentNode is null && gridCells[x, i].CurrentObstacle is null)
+				{
+					foundFirst = true;
+					yy = i;
+				}
+			}
+
+			return yy;
+		}
+
+		private int GetFirstEmptyRow(Vector2Int coordinates, bool findUnderObstacle = false)
+		{
+			return GetFirstEmptyRow(coordinates.x, coordinates.y, findUnderObstacle);
+		}
 
 		public List<Vector2Int> GetDirections(int x, int y)
 		{
@@ -218,31 +419,42 @@ namespace GridSystem
 			cellHolder.DestroyImmediateChildren();
 		}
 
-		// [Button, Group("Randomizer")]
-		// private void Randomize()
-		// {
-		// 	var weights = random.Select(x => x.Weight).ToList();
-		// 	var amounts = random.Select(x => x.Amount).ToList();
-		// 	for (int x = 0; x < size.x; x++)
-		// 	{
-		// 		for (int y = 0; y < size.y; y++)
-		// 		{
-		// 			var cell = gridCells[x, y];
-		// 			if (!cell) continue;
-		//
-		// 			cell.ClearNode();
-		// 			cell.Random(amounts.WeightedRandom(weights));
-		// 			cell.AddNode();
-		// 		}
-		// 	}
-		// }
+		[Group("Randomizer")] [SerializeField] private Randomizer[] random;
 
+		[Group("Randomizer"), Button]
+		private void Randomize()
+		{
+			var colors = random.Select(x => x.TileType).ToList();
+			var weights = random.Select(x => x.Weight).ToList();
+			for (int x = 0; x < size.x; x++)
+			{
+				for (int y = 0; y < size.y; y++)
+				{
+					var cell = gridCells[x, y];
+					if (!cell) continue;
+					if (cell.CellType == CellType.Empty) continue;
+
+					cell.ClearNode();
+					cell.Random(colors, weights);
+					cell.AddNode();
+				}
+			}
+		}
+
+		[DeclareHorizontalGroup("Random")]
 		[System.Serializable]
 		private class Randomizer
 		{
-			[Range(1, 9)]
-			public int Amount = 1;
-			public int Weight;
+			[Group("Random")] public TileType TileType;
+			[Group("Random")] public int Weight;
+		}
+
+		[DeclareHorizontalGroup("Spawner")]
+		[System.Serializable]
+		private class Spawner
+		{
+			[Group("Spawner")] public Array2DNode Nodes;
+			[Group("Spawner")] public int Weight;
 		}
 #endif
 
