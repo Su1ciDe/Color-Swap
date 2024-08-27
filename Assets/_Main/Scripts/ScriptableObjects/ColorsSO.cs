@@ -8,5 +8,6 @@ namespace ScriptableObjects
 	public class ColorsSO : ScriptableObject
 	{
 		public SerializedDictionary<TileType, Material> ColorMaterials = new SerializedDictionary<TileType, Material>();
+		public SerializedDictionary<TileType, Color> Colors = new SerializedDictionary<TileType, Color>();
 	}
 }
