@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 895456677555589956}
   - component: {fileID: 5219382863303537443}
+  - component: {fileID: 8816006783692580952}
   m_Layer: 0
   m_Name: NodeTile
   m_TagString: Untagged
@@ -49,6 +50,175 @@ MonoBehaviour:
   <TileType>k__BackingField: 0
   <Size>k__BackingField: {x: 0, y: 0}
   modelRenderer: {fileID: 6285760442832943318}
+--- !u!114 &8816006783692580952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5935873573918051194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac8d30c6a0d9642a11e5be4c440740, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Root: {fileID: 0}
+  m_Roots:
+  - {fileID: 2669739812306049627}
+  - {fileID: 5580215400542414739}
+  - {fileID: 2396959630538336404}
+  - {fileID: 8673331019415821778}
+  - {fileID: 5213656003209691957}
+  - {fileID: 4762434855799185355}
+  - {fileID: 2379881851457461364}
+  - {fileID: 7664125375849867457}
+  - {fileID: 1738000184372105410}
+  m_UpdateRate: 60
+  m_UpdateMode: 3
+  m_Damping: 0.1
+  m_DampingDistrib:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.2
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.25
+      value: -1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.35
+      value: 0.7
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.4
+      value: -0.7
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.6
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.65
+      value: -0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.8
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.85
+      value: -0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_Elasticity: 0.15
+  m_ElasticityDistrib:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_Stiffness: 0.1
+  m_StiffnessDistrib:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_Inert: 0
+  m_InertDistrib:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_Friction: 0
+  m_FrictionDistrib:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_Radius: 0
+  m_RadiusDistrib:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_EndLength: 5
+  m_EndOffset: {x: 0, y: 0, z: 0}
+  m_Gravity: {x: 0, y: 0, z: 0}
+  m_Force: {x: 0, y: 0, z: 0}
+  m_BlendWeight: 1
+  m_Colliders: []
+  m_Exclusions: []
+  m_FreezeAxis: 0
+  m_DistantDisable: 0
+  m_ReferenceObject: {fileID: 0}
+  m_DistanceToObject: 20
+  m_Multithread: 1
 --- !u!1 &8004157241349008847
 GameObject:
   m_ObjectHideFlags: 0
@@ -138,13 +308,58 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+--- !u!4 &1738000184372105410 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5195703387841336740, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2379881851457461364 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8143436864981227794, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2396959630538336404 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8162760391881125362, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2669739812306049627 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8433156841700843325, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4762434855799185355 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1302617836427598509, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5213656003209691957 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1756093528723031635, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5580215400542414739 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2122511638442353397, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
 --- !u!137 &6285760442832943318 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 522352206125596080, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
   m_PrefabInstance: {fileID: 5765809571092464998}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &7664125375849867457 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4204167623553133991, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8629047524172025397 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2865639841180109651, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
+  m_PrefabInstance: {fileID: 5765809571092464998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8673331019415821778 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2907524197102885044, guid: 5173d4ce4cb0b4b13a9ea3b91aafa48f, type: 3}
   m_PrefabInstance: {fileID: 5765809571092464998}
   m_PrefabAsset: {fileID: 0}

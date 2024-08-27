@@ -18,6 +18,8 @@ namespace GridSystem
 	[DeclareFoldoutGroup("Randomizer")]
 	public class GridManager : Singleton<GridManager>
 	{
+		public bool IsBusy { get; private set; }
+
 		[Title("Properties")]
 		[SerializeField, ReadOnly] private GridCellMatrix gridCells;
 		public GridCellMatrix GridCells => gridCells;
@@ -66,9 +68,10 @@ namespace GridSystem
 		public async UniTask CheckMatch3(GridCell gridCell)
 		{
 			Player.Instance.Inputs.CanInput = false;
+			IsBusy = true;
 
 			UniTask? task = null;
-			if (gridCell.CurrentNode is null) return;
+			if (!gridCell.CurrentNode) return;
 			var node = gridCell.CurrentNode;
 			foreach (var (tileType, tileCoordinates) in node.TilesDictionary)
 			{
@@ -77,7 +80,10 @@ namespace GridSystem
 
 				if (match3.nodes.Count >= BLAST_COUNT)
 				{
-					task = Blast(match3.tiles);
+					if (task is null)
+						task = Blast(match3.tiles);
+					else
+						Blast(match3.tiles);
 				}
 			}
 
@@ -85,6 +91,7 @@ namespace GridSystem
 
 			if (task is null)
 			{
+				IsBusy = false;
 				Player.Instance.Inputs.CanInput = true;
 			}
 			else
@@ -100,8 +107,6 @@ namespace GridSystem
 
 			await Fall();
 			await Fill();
-
-			Player.Instance.Inputs.CanInput = true;
 		}
 
 		private (List<Node> nodes, List<NodeTile> tiles) FindMatch3(Node node, TileType tileType, ref List<Node> traversedNodes)
@@ -109,13 +114,9 @@ namespace GridSystem
 			var nodeList = new List<Node>();
 			var tileList = new List<NodeTile>();
 			if (traversedNodes.Contains(node))
-			{
 				return (nodeList, tileList);
-			}
-			else
-			{
-				traversedNodes.Add(node);
-			}
+
+			traversedNodes.Add(node);
 
 			foreach (var (_tileType, tileCoordinates) in node.TilesDictionary)
 			{
@@ -156,25 +157,28 @@ namespace GridSystem
 
 		private async UniTask Blast(List<NodeTile> nodeTiles)
 		{
+			IsBusy = true;
+
+			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+			await UniTask.WaitForSeconds(0.3f);
+
 			UniTask? task = null;
 			for (var i = 0; i < nodeTiles.Count; i++)
 			{
 				if (nodeTiles[i])
-				{
 					task = nodeTiles[i].Blast();
-				}
 			}
 
 			if (task is not null)
-			{
 				await (UniTask)task;
-			}
 
 			OnBlast?.Invoke(nodeTiles.Count);
 		}
 
 		private async UniTask Fall()
 		{
+			IsBusy = true;
+
 			UniTask? task = null;
 			var fallingNodes = new List<INode>();
 			for (int x = 0; x < size.x; x++)
@@ -197,17 +201,26 @@ namespace GridSystem
 					if (emptyY < 0) continue;
 					if (emptyY.Equals(node.CurrentGridCell.Coordinates.y)) continue;
 					node.SwapCell(gridCells[x, emptyY]);
-					task = node.Fall(gridCells[x, emptyY].transform.position);
+
+					if (task is null)
+						task = node.Fall(gridCells[x, emptyY].transform.position);
+					else
+						node.Fall(gridCells[x, emptyY].transform.position);
+
 					GetFallingNodes(node, fallingNodes);
 				}
 			}
 
-			if (task == null) return;
+			if (task is null)
+			{
+				IsBusy = false;
+				return;
+			}
 
 			await (UniTask)task;
 			await UniTask.Yield();
 
-			await CheckBlastAfterFalling(fallingNodes);
+			CheckBlastAfterFalling(fallingNodes);
 		}
 
 		private async void GetFallingNodes(INode node, List<INode> fallingNodes)
@@ -218,14 +231,12 @@ namespace GridSystem
 				fallingNodes.Add(node);
 		}
 
-		private async UniTask CheckBlastAfterFalling(List<INode> fallingNodes)
+		private void CheckBlastAfterFalling(List<INode> fallingNodes)
 		{
-			UniTask? task = null;
-			for (int i = 0; i < fallingNodes.Count; i++)
-				task = CheckMatch3(fallingNodes[i].CurrentGridCell);
+			IsBusy = true;
 
-			if (task is not null)
-				await (UniTask)task;
+			for (int i = 0; i < fallingNodes.Count; i++)
+				CheckMatch3(fallingNodes[i].CurrentGridCell);
 		}
 
 		private async UniTask Fill()
@@ -292,7 +303,7 @@ namespace GridSystem
 			return count;
 		}
 
-		private bool IsAnyNodeFalling()
+		public bool IsAnyNodeFalling()
 		{
 			for (int x = 0; x < size.x; x++)
 			{

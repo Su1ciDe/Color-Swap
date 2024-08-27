@@ -11,14 +11,14 @@ namespace GamePlay.Player
 	public class PlayerInputs : MonoBehaviour
 	{
 		public bool CanInput { get; set; }
-		
+
 		[SerializeField] private LayerMask inputLayer;
 
 		private GridCell selectedCell;
 
 		public static event UnityAction<GridCell> OnDown;
-		public static  event UnityAction<GridCell> OnMove;
-		public static  event UnityAction<GridCell> OnUp;
+		public static event UnityAction<GridCell> OnMove;
+		public static event UnityAction<GridCell> OnUp;
 
 		private void Awake()
 		{
@@ -46,10 +46,11 @@ namespace GamePlay.Player
 			LeanTouch.OnFingerUpdate -= OnFingerMove;
 			LeanTouch.OnFingerUp -= OnFingerUp;
 		}
-		
+
 		private void OnFingerDown(LeanFinger finger)
 		{
 			if (!CanInput) return;
+			if (GridManager.Instance.IsBusy || GridManager.Instance.IsAnyNodeFalling()) return;
 			if (finger.IsOverGui) return;
 
 			var ray = finger.GetRay(Helper.MainCamera);
@@ -66,6 +67,7 @@ namespace GamePlay.Player
 		private void OnFingerMove(LeanFinger finger)
 		{
 			if (!CanInput) return;
+			if (GridManager.Instance.IsBusy || GridManager.Instance.IsAnyNodeFalling()) return;
 			if (finger.IsOverGui) return;
 
 			var ray = finger.GetRay(Helper.MainCamera);
@@ -85,6 +87,7 @@ namespace GamePlay.Player
 		private void OnFingerUp(LeanFinger finger)
 		{
 			if (!CanInput) return;
+			if (GridManager.Instance.IsBusy || GridManager.Instance.IsAnyNodeFalling()) return;
 			if (finger.IsOverGui) return;
 			if (!selectedCell) return;
 
