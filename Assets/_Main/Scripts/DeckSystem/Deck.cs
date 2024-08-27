@@ -58,7 +58,7 @@ namespace DeckSystem
 			foreach (var nodeOption in nodeOptions)
 			{
 				var node = Instantiate(GameManager.Instance.PrefabsSO.NodePrefab, transform);
-				node.Setup(nodeOption, null);
+				node.Setup(nodeOption.Nodes, null);
 
 				nodeQueue.Enqueue(node);
 				node.gameObject.SetActive(false);

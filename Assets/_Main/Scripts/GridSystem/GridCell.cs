@@ -59,7 +59,7 @@ namespace GridSystem
 			else
 			{
 				var node = (Node)PrefabUtility.InstantiatePrefab(GameManager.Instance.PrefabsSO.NodePrefab, nodeHolder);
-				node.Setup(nodeOptions, this);
+				node.Setup(nodeOptions.Nodes, this);
 				CurrentNode = node;
 				SceneVisibilityManager.instance.DisablePicking(node.gameObject, true);
 			}

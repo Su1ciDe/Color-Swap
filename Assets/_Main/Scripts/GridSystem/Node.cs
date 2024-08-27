@@ -39,6 +39,10 @@ namespace GridSystem
 		private const float ACCELERATION = .5f;
 		private const float TILE_SIZE = .5F;
 
+		private void OnDestroy()
+		{
+		}
+
 		public Tween JumpTo(Vector3 position)
 		{
 			return transform.DOJump(position, jumpPower, 1, jumpDuration);
@@ -82,19 +86,19 @@ namespace GridSystem
 			var tileCount = GetTileCount();
 			if (tileCount.Equals(0))
 			{
-				IsRearranging = false;
 				if (CurrentGridCell)
 				{
 					CurrentGridCell.CurrentNode = null;
 					CurrentGridCell = null;
 				}
 
-				Destroy(gameObject);
+				if (gameObject)
+					Destroy(gameObject);
 
 				return;
 			}
 
-			await UniTask.WaitForSeconds(0.2f);
+			await UniTask.WaitForSeconds(0.1f);
 
 			for (int x = 0; x < Tiles.GetLength(0); x++)
 			{
@@ -102,6 +106,19 @@ namespace GridSystem
 				{
 					var tile = Tiles[x, y];
 					if (!tile) continue;
+					if (TilesDictionary.Count.Equals(1))
+					{
+						tile.Grow(new Vector3(1, 0.5f, 1), Vector3.zero);
+
+						for (int x1 = 0; x1 < Tiles.GetLength(0); x1++)
+						{
+							for (int y1 = 0; y1 < Tiles.GetLength(1); y1++)
+							{
+								TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x1, y1));
+								Tiles[x1, y1] = tile;
+							}
+						}
+					}
 
 					if (TilesDictionary[tile.TileType].Count < 2)
 					{
@@ -137,26 +154,26 @@ namespace GridSystem
 							Tiles[x, y - 1] = tile;
 						}
 					}
-
-					if (TilesDictionary.Count.Equals(1))
-					{
-						tile.Grow(Vector3.one, Vector3.zero);
-						TilesDictionary[tile.TileType].AddIfNotContains(new Vector2Int(x, y));
-						Tiles[x, y] = tile;
-					}
 				}
 			}
 
 			IsRearranging = false;
+
+			await UniTask.Yield();
+			await UniTask.WaitForSeconds(NodeTile.GROW_DURATION);
+			if (!IsFalling)
+				GridManager.Instance.CheckMatch3(CurrentGridCell);
 		}
 
 		public async UniTask Fall(Vector3 position)
 		{
-			await UniTask.WaitUntil(() => !IsFalling);
+			if (position.Equals(transform.position)) return;
 
+			await UniTask.WaitUntil(() => !IsFalling, cancellationToken: this.GetCancellationTokenOnDestroy());
 			IsFalling = true;
+
 			var currentPos = transform.position;
-			while (currentPos.z > position.z)
+			while (gameObject && currentPos.z > position.z)
 			{
 				Velocity += ACCELERATION;
 				Velocity = Velocity >= FALL_SPEED ? FALL_SPEED : Velocity;
@@ -166,7 +183,7 @@ namespace GridSystem
 				currentPos.z -= Velocity * Time.deltaTime;
 				transform.position = currentPos;
 
-				await UniTask.Yield();
+				await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
 			}
 
 			currentPos.z = position.z;
@@ -242,11 +259,11 @@ namespace GridSystem
 
 #if UNITY_EDITOR
 
-		public void Setup(NodeOption nodeOption, GridCell gridCell)
+		public void Setup(Array2DNode nodeArray, GridCell gridCell)
 		{
 			CurrentGridCell = gridCell;
 
-			var size = nodeOption.Nodes.GridSize;
+			var size = nodeArray.GridSize;
 			var xOffset = TILE_SIZE * size.x * (size.x - 1) / 2f - TILE_SIZE / 2f;
 			var yOffset = TILE_SIZE * size.y * (size.y - 1) / 2f - TILE_SIZE / 2f;
 
@@ -255,7 +272,7 @@ namespace GridSystem
 			{
 				for (int y = 0; y < size.y; y++)
 				{
-					var nodeType = nodeOption.Nodes.GetCell(x, y);
+					var nodeType = nodeArray.GetCell(x, y);
 					if (x - 1 >= 0 && nodeType == Tiles[x - 1, y].TileType)
 					{
 						var leftTile = Tiles[x - 1, y];
@@ -303,7 +320,7 @@ namespace GridSystem
 			Obstacle = (NodeObstacle)obstacle;
 			Obstacle.Setup(this);
 
-			Setup(nodeOption, gridCell);
+			Setup(nodeOption.Nodes, gridCell);
 		}
 #endif
 
