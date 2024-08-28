@@ -47,9 +47,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <CurrentGridCell>k__BackingField: {fileID: 0}
   <Obstacle>k__BackingField: {fileID: 0}
-  <Tiles>k__BackingField: []
+  <Tiles>k__BackingField:
+    Arrays: []
+  <TilesDictionary>k__BackingField:
+    _serializedList: []
   jumpPower: 5
   jumpDuration: 0.5
+  fallSpeed: 25
+  fallAcceleration: 0.5
   tileHolder: {fileID: 6961347527418170895}
 --- !u!1 &6799473374721527422
 GameObject:

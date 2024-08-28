@@ -18,6 +18,7 @@ namespace DeckSystem
 		[Title("Settings")]
 		[SerializeField] private Vector3 positionOffset;
 		[SerializeField] private float scaleOffset;
+		[SerializeField] private float moveDuration = 0.5F;
 
 		[Title("References")]
 		[SerializeField] private Transform enterPoint;
@@ -32,7 +33,6 @@ namespace DeckSystem
 		private readonly Queue<Node> nodeQueue = new Queue<Node>();
 		private readonly Queue<Node> deckQueue = new Queue<Node>();
 
-		private const float MOVE_DURATION = 0.35F;
 
 		public static event UnityAction<Node, Node> OnSwapStart; // Node current, Node next
 		public static event UnityAction<Node, Node> OnSwapEnd; // Node current, Node next
@@ -103,7 +103,7 @@ namespace DeckSystem
 				Player.Instance.Inputs.CanInput = true;
 
 				cell.SetNode(currentNode);
-				GridManager.Instance.CheckMatch3(cell);
+				GridManager.Instance.OnSwap(cell);
 				OnSwapEnd?.Invoke(currentNode, selectedNode);
 			});
 
@@ -132,8 +132,8 @@ namespace DeckSystem
 			var i = 0;
 			foreach (var nodesInQueue in deckQueue)
 			{
-				nodesInQueue.transform.DOLocalMove(i * positionOffset, MOVE_DURATION).SetEase(Ease.InOutSine);
-				nodesInQueue.transform.DOScale(1 + i * scaleOffset, MOVE_DURATION).SetEase(Ease.InOutSine);
+				nodesInQueue.transform.DOLocalMove(i * positionOffset, moveDuration).SetEase(Ease.InOutSine);
+				nodesInQueue.transform.DOScale(1 + i * scaleOffset, moveDuration).SetEase(Ease.InOutSine);
 				i++;
 			}
 
@@ -148,11 +148,11 @@ namespace DeckSystem
 
 			if (tempNode)
 			{
-				await tempNode.transform.DOMove(exitPoint.transform.position, MOVE_DURATION).SetEase(Ease.OutExpo).OnComplete(() => Destroy(tempNode.gameObject)).AsyncWaitForCompletion();
+				await tempNode.transform.DOMove(exitPoint.transform.position, moveDuration).SetEase(Ease.OutExpo).OnComplete(() => Destroy(tempNode.gameObject)).AsyncWaitForCompletion();
 			}
 			else
 			{
-				await UniTask.WaitForSeconds(MOVE_DURATION);
+				await UniTask.WaitForSeconds(moveDuration);
 			}
 
 			Player.Instance.Inputs.CanInput = true;

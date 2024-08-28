@@ -50,7 +50,7 @@ namespace GamePlay.Player
 		private void OnFingerDown(LeanFinger finger)
 		{
 			if (!CanInput) return;
-			if (GridManager.Instance.IsBusy || GridManager.Instance.IsAnyNodeFalling()) return;
+			if (GridManager.Instance.IsBusy) return;
 			if (finger.IsOverGui) return;
 
 			var ray = finger.GetRay(Helper.MainCamera);
@@ -67,7 +67,7 @@ namespace GamePlay.Player
 		private void OnFingerMove(LeanFinger finger)
 		{
 			if (!CanInput) return;
-			if (GridManager.Instance.IsBusy || GridManager.Instance.IsAnyNodeFalling()) return;
+			if (GridManager.Instance.IsBusy) return;
 			if (finger.IsOverGui) return;
 
 			var ray = finger.GetRay(Helper.MainCamera);
@@ -87,7 +87,7 @@ namespace GamePlay.Player
 		private void OnFingerUp(LeanFinger finger)
 		{
 			if (!CanInput) return;
-			if (GridManager.Instance.IsBusy || GridManager.Instance.IsAnyNodeFalling()) return;
+			if (GridManager.Instance.IsBusy) return;
 			if (finger.IsOverGui) return;
 			if (!selectedCell) return;
 

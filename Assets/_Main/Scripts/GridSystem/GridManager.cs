@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -63,17 +64,45 @@ namespace GridSystem
 			CreateNewNodes();
 		}
 
-		#region Match3
+		private Coroutine busyCoroutine;
 
-		public async UniTask CheckMatch3(GridCell gridCell)
+		private IEnumerator BusyCoroutine()
 		{
-			Player.Instance.Inputs.CanInput = false;
 			IsBusy = true;
 
+			yield return new WaitUntil(() => !IsAnyNodeFalling());
+			yield return new WaitForSeconds(0.75f);
+			yield return new WaitUntil(() => !IsAnyNodeFalling());
+
+			IsBusy = false;
+		}
+
+		private void Busy()
+		{
+			if (busyCoroutine is not null)
+			{
+				StopCoroutine(busyCoroutine);
+				busyCoroutine = null;
+			}
+
+			busyCoroutine = StartCoroutine(BusyCoroutine());
+		}
+
+		#region Match3
+
+		public async UniTask OnSwap(GridCell gridCell)
+		{
+			IsBusy = true;
+
+			await CheckMatch3(gridCell.CurrentNode);
+		}
+
+		public async UniTask CheckMatch3(Node node)
+		{
 			UniTask? task = null;
-			if (!gridCell.CurrentNode) return;
-			var node = gridCell.CurrentNode;
-			foreach (var (tileType, tileCoordinates) in node.TilesDictionary)
+
+			var tempTiles = new Dictionary<TileType, List<Vector2Int>>(node.TilesDictionary);
+			foreach (var (tileType, tileCoordinates) in tempTiles)
 			{
 				var traversedNodes = new List<Node>();
 				var match3 = FindMatch3(node, tileType, ref traversedNodes);
@@ -87,26 +116,23 @@ namespace GridSystem
 				}
 			}
 
-			await UniTask.Yield();
-
 			if (task is null)
 			{
-				IsBusy = false;
-				Player.Instance.Inputs.CanInput = true;
-			}
-			else
-			{
-				HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
+				Busy();
 
-				await (UniTask)task;
+				return;
 			}
+
+			if (busyCoroutine is not null)
+			{
+				StopCoroutine(busyCoroutine);
+				busyCoroutine = null;
+			}
+
+			await (UniTask)task;
 
 			await UniTask.Yield();
-
-			OnAfterBlast?.Invoke();
-
-			await Fall();
-			await Fill();
+			await FallAndFill();
 		}
 
 		private (List<Node> nodes, List<NodeTile> tiles) FindMatch3(Node node, TileType tileType, ref List<Node> traversedNodes)
@@ -160,27 +186,48 @@ namespace GridSystem
 			IsBusy = true;
 
 			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
-			await UniTask.WaitForSeconds(0.3f);
+			await UniTask.WaitForSeconds(0.25f);
 
-			UniTask? task = null;
+			IsBusy = true;
+
+			var node = nodeTiles[0].Node;
+
 			for (var i = 0; i < nodeTiles.Count; i++)
 			{
 				if (nodeTiles[i])
-					task = nodeTiles[i].Blast();
+					nodeTiles[i].Blast();
 			}
 
-			if (task is not null)
-				await (UniTask)task;
+			fallingNodes.Add(node);
+
+			await UniTask.WaitUntil(() => !node.IsRearranging);
+			await UniTask.Yield();
+			await UniTask.WaitUntil(() => !node.IsFalling);
+			await UniTask.Yield();
+			HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
+			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION);
+			await UniTask.Yield();
 
 			OnBlast?.Invoke(nodeTiles.Count);
 		}
+
+		private async UniTask FallAndFill()
+		{
+			Fall();
+			await UniTask.Yield(PlayerLoopTiming.Update);
+			await Fill();
+			await UniTask.Yield();
+
+			CheckBlastAfterFalling();
+		}
+
+		private readonly List<INode> fallingNodes = new List<INode>();
 
 		private async UniTask Fall()
 		{
 			IsBusy = true;
 
 			UniTask? task = null;
-			var fallingNodes = new List<INode>();
 			for (int x = 0; x < size.x; x++)
 			{
 				for (int y = size.y - 1; y >= 0; y--)
@@ -207,36 +254,12 @@ namespace GridSystem
 					else
 						node.Fall(gridCells[x, emptyY].transform.position);
 
-					GetFallingNodes(node, fallingNodes);
+					GetFallingNodes(node);
 				}
 			}
 
-			if (task is null)
-			{
-				IsBusy = false;
-				return;
-			}
-
-			await (UniTask)task;
-			await UniTask.Yield();
-
-			CheckBlastAfterFalling(fallingNodes);
-		}
-
-		private async void GetFallingNodes(INode node, List<INode> fallingNodes)
-		{
-			await UniTask.Yield();
-
-			if (node.IsFalling)
-				fallingNodes.Add(node);
-		}
-
-		private void CheckBlastAfterFalling(List<INode> fallingNodes)
-		{
-			IsBusy = true;
-
-			for (int i = 0; i < fallingNodes.Count; i++)
-				CheckMatch3(fallingNodes[i].CurrentGridCell);
+			if (task is not null)
+				await (UniTask)task;
 		}
 
 		private async UniTask Fill()
@@ -250,7 +273,7 @@ namespace GridSystem
 					if (emptyCellY < 0) continue;
 
 					var node = SpawnNode();
-					node.transform.position = gridCells[x, 0].transform.position + new Vector3(0, 0, 1.5f);
+					node.transform.position = gridCells[x, 0].transform.position + (i + 1) * 1.05f * Vector3.forward;
 
 					node.PlaceToGrid(gridCells[x, emptyCellY]);
 					node.Fall(gridCells[x, emptyCellY].transform.position);
@@ -258,6 +281,29 @@ namespace GridSystem
 			}
 
 			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+		}
+
+		private async void GetFallingNodes(INode node)
+		{
+			await UniTask.Yield();
+
+			if (node.IsFalling)
+				fallingNodes.Add(node);
+		}
+
+		private void CheckBlastAfterFalling()
+		{
+			IsBusy = true;
+
+			for (int i = 0; i < fallingNodes.Count; i++)
+			{
+				if (fallingNodes[i] is not null && fallingNodes[i] is Node node)
+				{
+					CheckMatch3(node);
+				}
+			}
+
+			fallingNodes.Clear();
 		}
 
 		#region Spawn

@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Fiber.Managers;
@@ -37,10 +38,16 @@ namespace GridSystem
 
 		public async UniTask Blast()
 		{
-			await UniTask.WaitUntil(() => !Node.IsRearranging, cancellationToken: this.GetCancellationTokenOnDestroy());
-			await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
-			await UniTask.WaitUntil(() => !Node.IsFalling, cancellationToken: this.GetCancellationTokenOnDestroy());
-			await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
+			try
+			{
+				await UniTask.WaitUntil(() => !Node.IsRearranging, cancellationToken: this.GetCancellationTokenOnDestroy());
+				await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
+				await UniTask.WaitUntil(() => !Node.IsFalling, cancellationToken: this.GetCancellationTokenOnDestroy());
+				await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
+			}
+			catch (Exception e)
+			{
+			}
 
 			Node.OnTileBlast(this);
 			transform.DOShakeRotation(BLAST_DURATION, 10 * Vector3.up, 25, 0, false, ShakeRandomnessMode.Harmonic).SetEase(Ease.InQuart);
@@ -48,7 +55,7 @@ namespace GridSystem
 			{
 				// ParticlePooler.Instance.Spawn(BLAST_PARTICLE_NAME, transform.position);
 				Destroy(gameObject);
-			}).AsyncWaitForCompletion();
+			}).AsyncWaitForCompletion().AsUniTask();
 
 			Node.Rearrange();
 		}

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using AYellowpaper.SerializedCollections;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -29,19 +28,16 @@ namespace GridSystem
 		[Title("Parameters")]
 		[SerializeField] private float jumpPower = 5;
 		[SerializeField] private float jumpDuration = .5f;
+		[Space]
+		[SerializeField] private float fallSpeed = 25;
+		[SerializeField] private float fallAcceleration = .5f;
 
 		[Title("References")]
 		[SerializeField] private Transform tileHolder;
 
 		public float Velocity { get; private set; }
 
-		private const float FALL_SPEED = 20f;
-		private const float ACCELERATION = .5f;
 		private const float TILE_SIZE = .5F;
-
-		private void OnDestroy()
-		{
-		}
 
 		public Tween JumpTo(Vector3 position)
 		{
@@ -92,8 +88,7 @@ namespace GridSystem
 					CurrentGridCell = null;
 				}
 
-				if (gameObject)
-					Destroy(gameObject);
+				DestroyImmediate(gameObject);
 
 				return;
 			}
@@ -161,8 +156,8 @@ namespace GridSystem
 
 			await UniTask.Yield();
 			await UniTask.WaitForSeconds(NodeTile.GROW_DURATION);
-			if (!IsFalling)
-				GridManager.Instance.CheckMatch3(CurrentGridCell);
+			// if (!IsFalling)
+			// 	GridManager.Instance.CheckMatch3(CurrentGridCell);
 		}
 
 		public async UniTask Fall(Vector3 position)
@@ -175,8 +170,8 @@ namespace GridSystem
 			var currentPos = transform.position;
 			while (gameObject && currentPos.z > position.z)
 			{
-				Velocity += ACCELERATION;
-				Velocity = Velocity >= FALL_SPEED ? FALL_SPEED : Velocity;
+				Velocity += fallAcceleration;
+				Velocity = Velocity >= fallSpeed ? fallSpeed : Velocity;
 
 				currentPos = transform.position;
 

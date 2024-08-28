@@ -48,6 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   positionOffset: {x: 1.1, y: -0.1, z: 0}
   scaleOffset: -0.15
+  moveDuration: 0.35
   enterPoint: {fileID: 7432137704237243265}
   exitPoint: {fileID: 5590684487390246062}
   visibleNodes: 4
