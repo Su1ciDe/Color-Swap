@@ -8911,6 +8911,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DeckUI
       objectReference: {fileID: 0}
+    - target: {fileID: 539358485233574612, guid: b51fc6b5a52284260893e57f812fe052, type: 3}
+      propertyPath: m_text
+      value: NEXT
+      objectReference: {fileID: 0}
     - target: {fileID: 6422333804083628779, guid: b51fc6b5a52284260893e57f812fe052, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
