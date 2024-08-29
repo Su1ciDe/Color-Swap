@@ -225,7 +225,6 @@ namespace GridSystem
 					nodeTiles[i].Blast();
 			}
 
-
 			await UniTask.WaitUntil(() => !node.IsRearranging);
 			await UniTask.Yield();
 			await UniTask.WaitUntil(() => !node.IsFalling);
@@ -314,7 +313,13 @@ namespace GridSystem
 				}
 			}
 
-			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+			try
+			{
+				await UniTask.WaitUntil(() => !IsAnyNodeFalling(), cancellationToken: destroyCancellationToken);
+			}
+			catch (OperationCanceledException _)
+			{
+			}
 		}
 
 		private async void GetFallingNodes(INode node)
