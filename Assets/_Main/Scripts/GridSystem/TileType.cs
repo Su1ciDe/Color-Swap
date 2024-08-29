@@ -9,5 +9,6 @@ namespace GridSystem
 		_5Purple,
 		_6Red,
 		_7Yellow,
+		_8All,
 	}
 }

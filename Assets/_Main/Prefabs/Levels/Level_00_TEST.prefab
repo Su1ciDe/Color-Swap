@@ -14298,15 +14298,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 494174410804531509, guid: 8f2be9d31462041a2bdb434ab6e22c7e, type: 3}
       propertyPath: goalSetup.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 494174410804531509, guid: 8f2be9d31462041a2bdb434ab6e22c7e, type: 3}
       propertyPath: goalSetup.Array.data[0].Count
-      value: 15
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 494174410804531509, guid: 8f2be9d31462041a2bdb434ab6e22c7e, type: 3}
       propertyPath: goalSetup.Array.data[1].Count
       value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 494174410804531509, guid: 8f2be9d31462041a2bdb434ab6e22c7e, type: 3}
+      propertyPath: goalSetup.Array.data[0].TileColor
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 494174410804531509, guid: 8f2be9d31462041a2bdb434ab6e22c7e, type: 3}
       propertyPath: goalSetup.Array.data[1].TileColor

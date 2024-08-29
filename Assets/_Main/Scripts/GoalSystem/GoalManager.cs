@@ -38,6 +38,7 @@ namespace GoalSystem
 						TileType._5Purple => new Color(.7f, .25f, 1f),
 						TileType._6Red => Color.red,
 						TileType._7Yellow => Color.yellow,
+						TileType._8All => Color.white,
 						_ => throw new ArgumentOutOfRangeException()
 					};
 

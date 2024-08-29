@@ -25,12 +25,14 @@ namespace GoalSystem
 
 		private void OnTileBlast(NodeTile tile)
 		{
-			if (tile.TileType != TileType) return;
+			if (TileType == TileType._8All)
+			{
+			}
+			else if (tile.TileType != TileType) return;
 
 			CurrentCount++;
 
 			OnGoalUpdate?.Invoke(CurrentCount, Count);
-
 			if (CurrentCount >= Count)
 			{
 				Complete();

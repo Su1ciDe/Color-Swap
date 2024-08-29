@@ -50,6 +50,7 @@ namespace GridSystem
 			{
 				CurrentGridCell = gridCell;
 				CurrentGridCell.CurrentNode = this;
+				gridCell.SetNode(this);
 			}
 		}
 
@@ -64,7 +65,7 @@ namespace GridSystem
 		public void OnObstacleDestroyed()
 		{
 			Obstacle = null;
-			GridManager.Instance.OnNodeObstacleDestroyed(this);
+			GridManager.Instance.AddToFallingNodes(this);
 		}
 
 		public void OnTileBlast(NodeTile nodeTile)
@@ -75,6 +76,7 @@ namespace GridSystem
 
 			TilesDictionary.Remove(nodeTile.TileType);
 
+			GridManager.Instance.AddToFallingNodes(this);
 			CheckObstacles();
 		}
 

@@ -20,7 +20,7 @@ namespace GridSystem
 		[field: SerializeField, ReadOnly] public CellType CellType { get; set; }
 		[field: SerializeField, ReadOnly] public Node CurrentNode { get; set; }
 		[field: SerializeField, ReadOnly] public CellObstacle CurrentObstacle { get; set; }
-		
+
 		[Title("References")]
 		[SerializeField, PropertySpace(spaceAfter: 10)] private Transform nodeHolder;
 
@@ -36,6 +36,9 @@ namespace GridSystem
 		public void AddNode()
 		{
 			nodeHolder.DestroyImmediateChildren();
+
+			CellType = CellType.Cell;
+			transform.GetChild(0).gameObject.SetActive(true);
 
 			if (hasObstacle)
 			{
@@ -67,6 +70,10 @@ namespace GridSystem
 		public void ClearNode()
 		{
 			nodeHolder.DestroyImmediateChildren();
+
+			CellType = CellType.Cell;
+			transform.GetChild(0).gameObject.SetActive(true);
+			
 			CurrentNode = null;
 		}
 

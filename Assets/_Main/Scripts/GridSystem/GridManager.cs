@@ -217,6 +217,7 @@ namespace GridSystem
 			IsBusy = true;
 
 			var node = nodeTiles[0].Node;
+			fallingNodes.Add(node);
 
 			for (var i = 0; i < nodeTiles.Count; i++)
 			{
@@ -224,7 +225,6 @@ namespace GridSystem
 					nodeTiles[i].Blast();
 			}
 
-			fallingNodes.Add(node);
 
 			await UniTask.WaitUntil(() => !node.IsRearranging);
 			await UniTask.Yield();
@@ -325,7 +325,7 @@ namespace GridSystem
 				fallingNodes.Add(node);
 		}
 
-		public void OnNodeObstacleDestroyed(Node node)
+		public void AddToFallingNodes(Node node)
 		{
 			fallingNodes.Add(node);
 		}
