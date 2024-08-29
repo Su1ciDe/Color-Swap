@@ -46,5 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   randomizeAfterRotation: 1
   Levels:
-  - {fileID: 7385054679073475628, guid: f403fda72906143c09cc0414c2cdf931, type: 3}
+  - {fileID: 7385054679073475628, guid: 4ebaee0d86964404f8d6c503f0704368, type: 3}
+  - {fileID: 7385054679073475628, guid: 2b90a33c5bda5094d9f3351d9e92aef3, type: 3}
   TutorialLevels: []
