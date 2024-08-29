@@ -82,14 +82,14 @@ namespace GridSystem
 		private IEnumerator BusyCoroutine()
 		{
 			IsBusy = true;
-		
+
 			yield return new WaitUntil(() => !IsAnyNodeFalling());
 			yield return new WaitForSeconds(0.75f);
 			yield return new WaitUntil(() => !IsAnyNodeFalling());
-		
+
 			IsBusy = false;
 		}
-		
+
 		private void Busy()
 		{
 			if (busyCoroutine is not null)
@@ -97,7 +97,7 @@ namespace GridSystem
 				StopCoroutine(busyCoroutine);
 				busyCoroutine = null;
 			}
-		
+
 			busyCoroutine = StartCoroutine(BusyCoroutine());
 		}
 
@@ -320,6 +320,7 @@ namespace GridSystem
 
 					node.PlaceToGrid(gridCells[x, emptyCellY]);
 					node.Fall(gridCells[x, emptyCellY].transform.position);
+					fallingNodes.Add(node);
 				}
 			}
 
@@ -342,7 +343,7 @@ namespace GridSystem
 
 		public void AddToFallingNodes(Node node)
 		{
-			fallingNodes.Add(node);
+			fallingNodes.AddIfNotContains(node);
 		}
 
 		private void CheckBlastAfterFalling()
@@ -351,8 +352,9 @@ namespace GridSystem
 
 			for (int i = 0; i < fallingNodes.Count; i++)
 			{
-				if (fallingNodes[i] is not null && fallingNodes[i] is Node node)
+				if (fallingNodes[i] is not null && fallingNodes[i] is Node node && !node.Obstacle)
 				{
+					// Debug.Log("check fall", fallingNodes[i].GetTransform());
 					CheckMatch3(node);
 				}
 			}
@@ -365,10 +367,22 @@ namespace GridSystem
 		private Node SpawnNode()
 		{
 			if (nodesToSpawn.Count <= 0)
+			{
 				CreateNewNodes();
+				isFirstSpawn = false;
+			}
 
-			var node = nodesToSpawn[0];
-			nodesToSpawn.RemoveAt(0);
+			Node node = null;
+			if (isFirstSpawn)
+			{
+				node = nodesToSpawn[0];
+				nodesToSpawn.RemoveAt(0);
+			}
+			else
+			{
+				node = nodesToSpawn.WeightedRandom(spawnerRandomWeights);
+			}
+
 			node.gameObject.SetActive(true);
 			return node;
 		}
@@ -380,11 +394,6 @@ namespace GridSystem
 				var node = Instantiate(spawnerNodes[i], transform);
 				nodesToSpawn.Add(node);
 			}
-
-			if (isFirstSpawn)
-				isFirstSpawn = false;
-			else
-				nodesToSpawn.Shuffle();
 		}
 
 		[DeclareHorizontalGroup("Spawner")]

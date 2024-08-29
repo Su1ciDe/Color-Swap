@@ -172,7 +172,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_Elasticity: 0.075
+  m_Elasticity: 0.08
   m_ElasticityDistrib:
     serializedVersion: 2
     m_Curve: []

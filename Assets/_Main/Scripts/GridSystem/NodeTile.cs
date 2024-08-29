@@ -6,6 +6,7 @@ using Fiber.Utilities;
 using TriInspector;
 using UnityEngine;
 using UnityEngine.Events;
+using Utilities;
 
 namespace GridSystem
 {
@@ -59,6 +60,11 @@ namespace GridSystem
 				var seq = DOTween.Sequence();
 
 				seq.Append(transform.DOScale(GROW_SCALE * transform.localScale, BLAST_DURATION).SetEase(Ease.OutExpo));
+				seq.AppendCallback(() =>
+				{
+					var particle = ParticlePooler.Instance.Spawn(BLAST_PARTICLE_NAME, transform.position).GetComponent<BlastParticle>();
+					particle.Setup(modelRenderer.material.color);
+				});
 				seq.Append(transform.DOScale(0, BLAST_DURATION));
 				seq.AppendCallback(() =>
 				{
