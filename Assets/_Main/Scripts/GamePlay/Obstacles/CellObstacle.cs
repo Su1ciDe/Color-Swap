@@ -1,19 +1,22 @@
 using Cysharp.Threading.Tasks;
 using GridSystem;
 using Interfaces;
+using TriInspector;
 using UnityEngine;
 
 namespace GamePlay.Obstacles
 {
 	public abstract class CellObstacle : BaseObstacle, INode
 	{
-		public bool IsFalling { get; private set; }
-		public GridCell CurrentGridCell { get; set; }
+		[field: Title("Properties")]
+		[field: SerializeField, ReadOnly] public GridCell CurrentGridCell { get; set; }
 
+		public bool IsFalling { get; private set; }
 		public float Velocity { get; private set; }
 
-		private const float FALL_SPEED = 20f;
-		private const float ACCELERATION = .5f;
+		[Space]
+		[SerializeField] private float fallSpeed = 25;
+		[SerializeField] private float fallAcceleration = .5f;
 
 		public virtual void Setup(GridCell gridCell)
 		{
@@ -28,8 +31,8 @@ namespace GamePlay.Obstacles
 			var currentPos = transform.position;
 			while (currentPos.z > targetPosition.z)
 			{
-				Velocity += ACCELERATION;
-				Velocity = Velocity >= FALL_SPEED ? FALL_SPEED : Velocity;
+				Velocity += fallAcceleration;
+				Velocity = Velocity >= fallSpeed ? fallSpeed : Velocity;
 
 				currentPos = transform.position;
 
@@ -69,6 +72,25 @@ namespace GamePlay.Obstacles
 			}
 
 			PlaceToGrid(gridCell);
+		}
+
+		public override void OnBlastNear(Node node)
+		{
+			base.OnBlastNear(node);
+
+			// particle
+
+			DestroyObstacle();
+		}
+
+		public override void DestroyObstacle()
+		{
+			if (CurrentGridCell)
+			{
+				CurrentGridCell.CurrentObstacle = null;
+			}
+
+			base.DestroyObstacle();
 		}
 	}
 }

@@ -60,10 +60,13 @@ namespace GoalSystem
 
 		private void OnDestroy()
 		{
-			foreach (var goal in Goals)
-				goal.OnGoalComplete -= OnGoalCompleted;
+			if (Goals is not null)
+			{
+				foreach (var goal in Goals)
+					goal.OnGoalComplete -= OnGoalCompleted;
 
-			Goals.Clear();
+				Goals.Clear();
+			}
 		}
 
 		private void OnLevelLoaded()

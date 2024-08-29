@@ -64,6 +64,7 @@ namespace GridSystem
 		public void OnObstacleDestroyed()
 		{
 			Obstacle = null;
+			GridManager.Instance.OnNodeObstacleDestroyed(this);
 		}
 
 		public void OnTileBlast(NodeTile nodeTile)
@@ -73,6 +74,8 @@ namespace GridSystem
 				Tiles[coordinates[i].x, coordinates[i].y] = null;
 
 			TilesDictionary.Remove(nodeTile.TileType);
+
+			CheckObstacles();
 		}
 
 		public async void Rearrange()
@@ -310,7 +313,7 @@ namespace GridSystem
 
 		public void Setup(NodeOption nodeOption, GridCell gridCell, BaseObstacle obstacle)
 		{
-			Obstacle = (NodeObstacle)obstacle;
+			Obstacle = (NodeObstacle)PrefabUtility.InstantiatePrefab(obstacle, transform);
 			Obstacle.Setup(this);
 
 			Setup(nodeOption.Nodes, gridCell);

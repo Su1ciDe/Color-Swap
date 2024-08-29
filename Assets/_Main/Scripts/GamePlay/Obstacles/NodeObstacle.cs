@@ -14,8 +14,17 @@ namespace GamePlay.Obstacles
 			CurrentNode = node;
 		}
 
+		public override void OnBlastNear(Node node)
+		{
+			base.OnBlastNear(node);
+			
+			DestroyObstacle();
+		}
+
 		public override void DestroyObstacle()
 		{
+			// particles 
+			
 			if (CurrentNode)
 			{
 				CurrentNode.OnObstacleDestroyed();

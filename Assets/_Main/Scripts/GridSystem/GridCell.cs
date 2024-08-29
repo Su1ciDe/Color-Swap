@@ -20,9 +20,7 @@ namespace GridSystem
 		[field: SerializeField, ReadOnly] public CellType CellType { get; set; }
 		[field: SerializeField, ReadOnly] public Node CurrentNode { get; set; }
 		[field: SerializeField, ReadOnly] public CellObstacle CurrentObstacle { get; set; }
-
-		// [field: SerializeField, ReadOnly] public INode CurrentNode { get; set; }
-
+		
 		[Title("References")]
 		[SerializeField, PropertySpace(spaceAfter: 10)] private Transform nodeHolder;
 

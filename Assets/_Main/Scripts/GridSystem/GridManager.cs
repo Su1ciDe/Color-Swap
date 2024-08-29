@@ -325,6 +325,11 @@ namespace GridSystem
 				fallingNodes.Add(node);
 		}
 
+		public void OnNodeObstacleDestroyed(Node node)
+		{
+			fallingNodes.Add(node);
+		}
+
 		private void CheckBlastAfterFalling()
 		{
 			IsBusy = true;
