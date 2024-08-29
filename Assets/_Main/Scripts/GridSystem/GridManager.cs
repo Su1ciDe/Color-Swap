@@ -1,14 +1,13 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Fiber.AudioSystem;
 using Fiber.Managers;
 using Fiber.Utilities;
+using Fiber.AudioSystem;
 using Fiber.Utilities.Extensions;
-using GamePlay.Player;
 using Interfaces;
 using Lofelt.NiceVibrations;
 using TriInspector;
