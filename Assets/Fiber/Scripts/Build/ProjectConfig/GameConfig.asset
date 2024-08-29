@@ -19,12 +19,12 @@ MonoBehaviour:
   iOSBundleId: com.FiberGames.ColorSwap
   teamId: 9JRFGT2VDU
   iOSBuildNo: 0
-  androidBundleId: com.fibergames.game
+  androidBundleId: com.FiberGames.ColorSwap
   androidBuildNo: 1
   facebookId: 531234655928261
   facebookClientToken: a018213826872e13e7cd95d0b9228500
   gameId: 8107ed1620dd652841781cbe382487c9eefbaf84a01e142429aad0e8581154ef
   gameSecret: b86a3e08989d85fdeaf1e985ee6c313cbf53731a730df3b33baf6eaa9b04673d
-  background: {fileID: 0}
-  loadingScreenLogo: {fileID: 0}
-  loadingScreenTitle: {fileID: 0}
+  background: {fileID: 21300000, guid: 94cf02c4f7de1954cb853e138d995e07, type: 3}
+  loadingScreenLogo: {fileID: 21300000, guid: e502c4935559ec643b5376b263f8653c, type: 3}
+  loadingScreenTitle: {fileID: 21300000, guid: 97bb2454d5fce7944a8b7bdf64d36f05, type: 3}

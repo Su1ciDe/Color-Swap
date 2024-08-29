@@ -255,8 +255,6 @@ namespace GridSystem
 
 		#region Setup
 
-#if UNITY_EDITOR
-
 		public void Setup(Array2DNode nodeArray, GridCell gridCell)
 		{
 			CurrentGridCell = gridCell;
@@ -312,7 +310,7 @@ namespace GridSystem
 				}
 			}
 		}
-
+#if UNITY_EDITOR
 		public void Setup(NodeOption nodeOption, GridCell gridCell, BaseObstacle obstacle)
 		{
 			Obstacle = (NodeObstacle)PrefabUtility.InstantiatePrefab(obstacle, transform);

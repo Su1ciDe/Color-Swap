@@ -48,4 +48,6 @@ MonoBehaviour:
   Levels:
   - {fileID: 7385054679073475628, guid: 4ebaee0d86964404f8d6c503f0704368, type: 3}
   - {fileID: 7385054679073475628, guid: 2b90a33c5bda5094d9f3351d9e92aef3, type: 3}
+  - {fileID: 7385054679073475628, guid: cab83bc1c172130418a2529a65c7a82d, type: 3}
+  - {fileID: 7385054679073475628, guid: e7e92a6375afeda48b81b9113a15609f, type: 3}
   TutorialLevels: []

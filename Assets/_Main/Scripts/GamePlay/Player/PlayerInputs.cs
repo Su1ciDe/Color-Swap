@@ -3,6 +3,7 @@ using Fiber.Utilities;
 using GridSystem;
 using Interfaces;
 using Lean.Touch;
+using Lofelt.NiceVibrations;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -58,6 +59,8 @@ namespace GamePlay.Player
 			{
 				if (hit.rigidbody && hit.rigidbody.TryGetComponent(out GridCell gridCell))
 				{
+					HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.LightImpact);
+
 					selectedCell = gridCell;
 					OnDown?.Invoke(selectedCell);
 				}
@@ -77,6 +80,8 @@ namespace GamePlay.Player
 				{
 					if (selectedCell != gridCell)
 					{
+						HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.LightImpact);
+
 						selectedCell = gridCell;
 						OnMove?.Invoke(selectedCell);
 					}

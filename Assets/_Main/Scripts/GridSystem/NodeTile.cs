@@ -55,16 +55,20 @@ namespace GridSystem
 
 				Node.OnTileBlast(this);
 
-				transform.DOShakeRotation(BLAST_DURATION, 10 * Vector3.up, 25, 0, false, ShakeRandomnessMode.Harmonic).SetEase(Ease.InQuart);
-				await transform.DOScale(GROW_SCALE * transform.localScale, BLAST_DURATION).SetEase(Ease.OutExpo).OnComplete(() =>
-				{
-					// ParticlePooler.Instance.Spawn(BLAST_PARTICLE_NAME, transform.position);
+				// transform.DOShakeRotation(BLAST_DURATION, 10 * Vector3.up, 25, 0, false, ShakeRandomnessMode.Harmonic).SetEase(Ease.InQuart);
+				var seq = DOTween.Sequence();
 
+				seq.Append(transform.DOScale(GROW_SCALE * transform.localScale, BLAST_DURATION).SetEase(Ease.OutExpo));
+				seq.Append(transform.DOScale(0, BLAST_DURATION));
+				seq.AppendCallback(() =>
+				{
 					OnTileBlast?.Invoke(this);
 
 					DestroyImmediate(gameObject);
 					Node.Rearrange();
-				}).AsyncWaitForCompletion().AsUniTask();
+				});
+				seq.AsyncWaitForCompletion().AsUniTask();
+				seq.SetLink(gameObject);
 			}
 			catch (OperationCanceledException e)
 			{

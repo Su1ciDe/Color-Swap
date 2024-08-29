@@ -1,13 +1,13 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Fiber.Managers;
 using Fiber.Utilities;
+using Fiber.AudioSystem;
 using Fiber.Utilities.Extensions;
-using GamePlay.Player;
 using Interfaces;
 using Lofelt.NiceVibrations;
 using TriInspector;
@@ -50,6 +50,7 @@ namespace GridSystem
 		private const int BLAST_COUNT = 3;
 
 		private CancellationTokenSource destroyCancellation = new CancellationTokenSource();
+		// private CancellationTokenSource inputCancellation = new CancellationTokenSource();
 
 		public static event UnityAction<int> OnBlast;
 		public static event UnityAction OnAfterBlast;
@@ -78,36 +79,42 @@ namespace GridSystem
 
 		private Coroutine busyCoroutine;
 
-		// private IEnumerator BusyCoroutine()
-		// {
-		// 	IsBusy = true;
-		//
-		// 	yield return new WaitUntil(() => !IsAnyNodeFalling());
-		// 	yield return new WaitForSeconds(0.75f);
-		// 	yield return new WaitUntil(() => !IsAnyNodeFalling());
-		//
-		// 	IsBusy = false;
-		// }
-		//
-		// private void Busy()
-		// {
-		// 	if (busyCoroutine is not null)
-		// 	{
-		// 		StopCoroutine(busyCoroutine);
-		// 		busyCoroutine = null;
-		// 	}
-		//
-		// 	busyCoroutine = StartCoroutine(BusyCoroutine());
-		// }
-
-		private async void Busy()
+		private IEnumerator BusyCoroutine()
 		{
 			IsBusy = true;
-			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
-			await UniTask.WaitForSeconds(0.75f);
-			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+		
+			yield return new WaitUntil(() => !IsAnyNodeFalling());
+			yield return new WaitForSeconds(0.75f);
+			yield return new WaitUntil(() => !IsAnyNodeFalling());
+		
 			IsBusy = false;
 		}
+		
+		private void Busy()
+		{
+			if (busyCoroutine is not null)
+			{
+				StopCoroutine(busyCoroutine);
+				busyCoroutine = null;
+			}
+		
+			busyCoroutine = StartCoroutine(BusyCoroutine());
+		}
+
+		// private async void Busy()
+		// {
+		// 	try
+		// 	{
+		// 		IsBusy = true;
+		// 		await UniTask.WaitUntil(() => !IsAnyNodeFalling(), cancellationToken: inputCancellation.Token);
+		// 		await UniTask.WaitForSeconds(0.75f, cancellationToken: inputCancellation.Token);
+		// 		await UniTask.WaitUntil(() => !IsAnyNodeFalling(), cancellationToken: inputCancellation.Token);
+		// 		IsBusy = false;
+		// 	}
+		// 	catch (OperationCanceledException _)
+		// 	{
+		// 	}
+		// }
 
 		#region Match3
 
@@ -229,8 +236,11 @@ namespace GridSystem
 			await UniTask.Yield();
 			await UniTask.WaitUntil(() => !node.IsFalling);
 			await UniTask.Yield();
+
 			HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
-			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION);
+			AudioManager.Instance.PlayAudio(AudioName.Pop3);
+
+			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION * 2);
 			await UniTask.Yield();
 
 			OnBlast?.Invoke(nodeTiles.Count);
@@ -375,6 +385,14 @@ namespace GridSystem
 				isFirstSpawn = false;
 			else
 				nodesToSpawn.Shuffle();
+		}
+
+		[DeclareHorizontalGroup("Spawner")]
+		[System.Serializable]
+		private class Spawner
+		{
+			[Group("Spawner")] public Array2DNode Nodes;
+			[Group("Spawner")] public int Weight;
 		}
 
 		#endregion
@@ -553,13 +571,6 @@ namespace GridSystem
 			[Group("Random")] public int Weight;
 		}
 
-		[DeclareHorizontalGroup("Spawner")]
-		[System.Serializable]
-		private class Spawner
-		{
-			[Group("Spawner")] public Array2DNode Nodes;
-			[Group("Spawner")] public int Weight;
-		}
 #endif
 
 		[System.Serializable]
