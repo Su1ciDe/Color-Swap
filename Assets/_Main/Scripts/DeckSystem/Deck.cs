@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Fiber.AudioSystem;
 using Fiber.Managers;
 using Fiber.Utilities;
 using GamePlay.Player;
@@ -32,7 +33,6 @@ namespace DeckSystem
 		private Node currentNode;
 		private readonly Queue<Node> nodeQueue = new Queue<Node>();
 		private readonly Queue<Node> deckQueue = new Queue<Node>();
-
 
 		public static event UnityAction<Node, Node> OnSwapStart; // Node current, Node next
 		public static event UnityAction<Node, Node> OnSwapEnd; // Node current, Node next
@@ -119,6 +119,8 @@ namespace DeckSystem
 		{
 			Player.Instance.Inputs.CanInput = false;
 
+			AudioManager.Instance.PlayAudio(AudioName.Swoosh);
+
 			var tempNode = currentNode;
 			if (nodeQueue.TryDequeue(out var node))
 			{
@@ -160,7 +162,7 @@ namespace DeckSystem
 
 		private async void CheckLose()
 		{
-			await UniTask.WaitForSeconds(2);
+			await UniTask.WaitForSeconds(1);
 
 			LevelManager.Instance.Lose();
 		}

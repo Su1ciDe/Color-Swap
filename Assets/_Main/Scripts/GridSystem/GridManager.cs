@@ -1,14 +1,13 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Fiber.AudioSystem;
 using Fiber.Managers;
 using Fiber.Utilities;
+using Fiber.AudioSystem;
 using Fiber.Utilities.Extensions;
-using GamePlay.Player;
 using Interfaces;
 using Lofelt.NiceVibrations;
 using TriInspector;
@@ -42,7 +41,9 @@ namespace GridSystem
 		[SerializeField] private Spawner[] spawner;
 
 		private readonly List<Node> nodesToSpawn = new List<Node>();
+		private List<int> randomWeights = new List<int>();
 		private bool isFirstSpawn = true;
+		
 		private readonly List<Node> spawnerNodes = new List<Node>();
 		private List<int> spawnerRandomWeights;
 
@@ -50,7 +51,7 @@ namespace GridSystem
 
 		private const int BLAST_COUNT = 3;
 
-		private CancellationTokenSource destroyCancellation = new CancellationTokenSource();
+		// private CancellationTokenSource destroyCancellation = new CancellationTokenSource();
 		// private CancellationTokenSource inputCancellation = new CancellationTokenSource();
 
 		public static event UnityAction<int> OnBlast;
@@ -74,7 +75,7 @@ namespace GridSystem
 		{
 			StopAllCoroutines();
 
-			destroyCancellation.Cancel();
+			// destroyCancellation.Cancel();
 			// destroyCancellation.Dispose();
 		}
 
@@ -83,14 +84,14 @@ namespace GridSystem
 		private IEnumerator BusyCoroutine()
 		{
 			IsBusy = true;
-		
+
 			yield return new WaitUntil(() => !IsAnyNodeFalling());
 			yield return new WaitForSeconds(0.75f);
 			yield return new WaitUntil(() => !IsAnyNodeFalling());
-		
+
 			IsBusy = false;
 		}
-		
+
 		private void Busy()
 		{
 			if (busyCoroutine is not null)
@@ -98,7 +99,7 @@ namespace GridSystem
 				StopCoroutine(busyCoroutine);
 				busyCoroutine = null;
 			}
-		
+
 			busyCoroutine = StartCoroutine(BusyCoroutine());
 		}
 
@@ -239,9 +240,9 @@ namespace GridSystem
 			await UniTask.Yield();
 
 			HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
-			AudioManager.Instance.PlayAudio(AudioName.Pop3);
+			AudioManager.Instance.PlayAudio(AudioName.Blast);
 
-			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION * 2);
+			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION * 2, cancellationToken: destroyCancellationToken);
 			await UniTask.Yield();
 
 			OnBlast?.Invoke(nodeTiles.Count);
@@ -250,17 +251,16 @@ namespace GridSystem
 		private async UniTask FallAndFill()
 		{
 			Fall();
-			await UniTask.Yield();
 
 			try
 			{
-				await Fill().AttachExternalCancellation(destroyCancellation.Token);
+				await UniTask.Yield();
+				await Fill().AttachExternalCancellation(destroyCancellationToken);
+				await UniTask.Yield();
 			}
 			catch (OperationCanceledException _)
 			{
 			}
-
-			await UniTask.Yield();
 
 			CheckBlastAfterFalling();
 		}
@@ -321,6 +321,7 @@ namespace GridSystem
 
 					node.PlaceToGrid(gridCells[x, emptyCellY]);
 					node.Fall(gridCells[x, emptyCellY].transform.position);
+					fallingNodes.Add(node);
 				}
 			}
 
@@ -343,7 +344,7 @@ namespace GridSystem
 
 		public void AddToFallingNodes(Node node)
 		{
-			fallingNodes.Add(node);
+			fallingNodes.AddIfNotContains(node);
 		}
 
 		private void CheckBlastAfterFalling()
@@ -352,8 +353,9 @@ namespace GridSystem
 
 			for (int i = 0; i < fallingNodes.Count; i++)
 			{
-				if (fallingNodes[i] is not null && fallingNodes[i] is Node node)
+				if (fallingNodes[i] is not null && fallingNodes[i] is Node node && !node.Obstacle)
 				{
+					// Debug.Log("check fall", fallingNodes[i].GetTransform());
 					CheckMatch3(node);
 				}
 			}
@@ -366,10 +368,22 @@ namespace GridSystem
 		private Node SpawnNode()
 		{
 			if (nodesToSpawn.Count <= 0)
+			{
 				CreateNewNodes();
+				isFirstSpawn = false;
+			}
 
-			var node = nodesToSpawn[0];
-			nodesToSpawn.RemoveAt(0);
+			Node node = null;
+			if (isFirstSpawn)
+			{
+				node = nodesToSpawn[0];
+				nodesToSpawn.RemoveAt(0);
+			}
+			else
+			{
+				node = nodesToSpawn.PickWeightedRandom(ref randomWeights);
+			}
+
 			node.gameObject.SetActive(true);
 			return node;
 		}
@@ -382,10 +396,7 @@ namespace GridSystem
 				nodesToSpawn.Add(node);
 			}
 
-			if (isFirstSpawn)
-				isFirstSpawn = false;
-			else
-				nodesToSpawn.Shuffle();
+			randomWeights = new List<int>(spawnerRandomWeights);
 		}
 
 		[DeclareHorizontalGroup("Spawner")]

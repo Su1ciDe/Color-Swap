@@ -76,7 +76,6 @@ namespace GridSystem
 
 			TilesDictionary.Remove(nodeTile.TileType);
 
-			GridManager.Instance.AddToFallingNodes(this);
 			CheckObstacles();
 		}
 
@@ -161,6 +160,8 @@ namespace GridSystem
 
 			await UniTask.Yield();
 			await UniTask.WaitForSeconds(NodeTile.GROW_DURATION);
+			
+			GridManager.Instance.AddToFallingNodes(this);
 		}
 
 		public async UniTask Fall(Vector3 position)
