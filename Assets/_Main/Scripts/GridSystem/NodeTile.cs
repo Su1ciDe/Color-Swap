@@ -19,15 +19,21 @@ namespace GridSystem
 
 		[Title("References")]
 		[SerializeField] private Renderer modelRenderer;
+		[SerializeField] private Outline outline;
 
-		private bool blasted = false;
+		private bool blasted;
 
 		public static float BLAST_DURATION = .2F;
 		public static float GROW_DURATION = .25f;
-		private const float GROW_SCALE = 1.25f;
+		private const float GROW_SCALE = 1.2f;
 		private const string BLAST_PARTICLE_NAME = "Blast";
 
 		public static event UnityAction<NodeTile> OnTileBlast;
+
+		private void Awake()
+		{
+			SetupOutline();
+		}
 
 		private void OnDestroy()
 		{
@@ -42,10 +48,33 @@ namespace GridSystem
 			modelRenderer.material = GameManager.Instance.ColorsSO.ColorMaterials[tileType];
 		}
 
+		private void SetupOutline()
+		{
+			outline.OutlineMode = Outline.Mode.OutlineAll;
+			outline.OutlineWidth = 0f;
+
+			var color = GameManager.Instance.ColorsSO.ColorMaterials[TileType].color;
+			Color.RGBToHSV(color, out var h, out var s, out var v);
+			v -= .25f;
+			var newColor = Color.HSVToRGB(h, s, v);
+			outline.OutlineColor = newColor;
+		}
+
 		public async UniTask Blast()
 		{
 			if (blasted) return;
 			blasted = true;
+
+			// Show outline
+			DOVirtual.Float(0, 5, .1f, value => outline.OutlineWidth = value).SetEase(Ease.OutSine);
+
+			// Brighten the color
+			var mat = modelRenderer.materials[0];
+			var color = mat.color;
+			Color.RGBToHSV(color, out var h, out var s, out var v);
+			v += .25f;
+			var newColor = Color.HSVToRGB(h, s, v);
+			mat.DOColor(newColor, .1f).SetEase(Ease.OutSine);
 
 			try
 			{
@@ -56,9 +85,7 @@ namespace GridSystem
 
 				Node.OnTileBlast(this);
 
-				// transform.DOShakeRotation(BLAST_DURATION, 10 * Vector3.up, 25, 0, false, ShakeRandomnessMode.Harmonic).SetEase(Ease.InQuart);
 				var seq = DOTween.Sequence();
-
 				seq.Append(transform.DOScale(GROW_SCALE * transform.localScale, BLAST_DURATION).SetEase(Ease.OutExpo));
 				seq.AppendCallback(() =>
 				{
