@@ -3,7 +3,7 @@ namespace Fiber.AudioSystem
 	/// <summary>
 	/// Enums of the AudioSystem
 	/// <br/> Add your audio names here
-	/// <br/><i> Add new entries to end of the list</i>
+	/// <br/><i> Add new entries to the end of the list</i>
 	/// </summary>
 	public enum AudioName
 	{
@@ -15,6 +15,8 @@ namespace Fiber.AudioSystem
 		Plop3,
 		Pop1,
 		Pop2,
-		Pop3
+		Pop3,
+		Coin,
+		Swoosh,
 	}
 }

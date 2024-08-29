@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using DeckSystem;
+using DG.Tweening;
 using Fiber.Managers;
 using GamePlay.Player;
 using TMPro;
@@ -36,6 +37,9 @@ namespace UI
 
 		private async void NextButtonClicked()
 		{
+			transform.DOComplete();
+			transform.DOScale(0.75f, .1f).SetEase(Ease.InOutExpo).SetLoops(2, LoopType.Yoyo);
+			
 			btnNext.interactable = false;
 			Player.Instance.Inputs.CanInput = false;
 
@@ -50,6 +54,9 @@ namespace UI
 		private void SetDeckCountText(int count)
 		{
 			txtNodesInDeckCount.SetText(count.ToString());
+
+			if (count <= 3)
+				txtNodesInDeckCount.color = Color.red;
 		}
 	}
 }

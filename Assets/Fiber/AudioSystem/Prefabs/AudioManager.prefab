@@ -53,7 +53,7 @@ MonoBehaviour:
     Audios:
       _serializedList:
       - Key: 0
-        Value: {fileID: 8300000, guid: f029c0624e3b646fdb02e2eb2cae23f1, type: 3}
+        Value: {fileID: 8300000, guid: f5d073c96417649b081451dbc843e015, type: 3}
       - Key: 1
         Value: {fileID: 8300000, guid: d2d20cf3cbff648228be378454d274a1, type: 3}
       - Key: 5
@@ -68,6 +68,10 @@ MonoBehaviour:
         Value: {fileID: 8300000, guid: c4f6a36a176ec48ddbb93176b4ffe484, type: 3}
       - Key: 4
         Value: {fileID: 8300000, guid: e516ad2a2ea7946818d5845c0f828e3f, type: 3}
+      - Key: 8
+        Value: {fileID: 8300000, guid: eb71370ea15a246a28f91f279054e6d9, type: 3}
+      - Key: 9
+        Value: {fileID: 8300000, guid: 85a9de289943e4b379e6e8844ab1073b, type: 3}
   - AudioSourcePrefab: {fileID: 5458974145386491207, guid: 9e1ed01cef9ce4a008f7d16af7973136, type: 3}
     ActiveAudioSource: {fileID: 0}
     CanPlayOver: 0
