@@ -51,7 +51,7 @@ MonoBehaviour:
   moveDuration: 0.35
   enterPoint: {fileID: 7432137704237243265}
   exitPoint: {fileID: 5590684487390246062}
-  visibleNodes: 4
+  visibleNodes: 3
   nodeOptions:
   - Nodes:
       gridSize: {x: 2, y: 2}

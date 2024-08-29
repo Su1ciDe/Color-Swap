@@ -102,7 +102,7 @@ namespace Fiber.Utilities.Extensions
 		#endregion
 
 		#region List
-		
+
 		/// <summary>
 		/// Adds an item to the current collection if it is not already in the collection
 		/// </summary>
@@ -114,7 +114,12 @@ namespace Fiber.Utilities.Extensions
 			list.Add(item);
 			return true;
 		}
-		
+
+		/// <summary>
+		/// Adds a range of collection to the current collection if it is not already in the collection
+		/// </summary>
+		/// <param name="collection">The collection to add to the current collection</param>
+		/// <returns>Whether it is added or not</returns>
 		public static bool AddRangeIfNotContains<T>(this IList<T> list, IEnumerable<T> collection)
 		{
 			var added = false;
@@ -123,6 +128,7 @@ namespace Fiber.Utilities.Extensions
 				if (list.AddIfNotContains(item))
 					added = true;
 			}
+
 			return added;
 		}
 

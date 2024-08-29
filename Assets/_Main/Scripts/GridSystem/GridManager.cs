@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Fiber.Managers;
 using Fiber.Utilities;
@@ -47,6 +49,8 @@ namespace GridSystem
 
 		private const int BLAST_COUNT = 3;
 
+		private CancellationTokenSource destroyCancellation = new CancellationTokenSource();
+
 		public static event UnityAction<int> OnBlast;
 		public static event UnityAction OnAfterBlast;
 
@@ -64,28 +68,45 @@ namespace GridSystem
 			CreateNewNodes();
 		}
 
-		private Coroutine busyCoroutine;
-
-		private IEnumerator BusyCoroutine()
+		private void OnDestroy()
 		{
-			IsBusy = true;
+			StopAllCoroutines();
 
-			yield return new WaitUntil(() => !IsAnyNodeFalling());
-			yield return new WaitForSeconds(0.75f);
-			yield return new WaitUntil(() => !IsAnyNodeFalling());
-
-			IsBusy = false;
+			destroyCancellation.Cancel();
+			// destroyCancellation.Dispose();
 		}
 
-		private void Busy()
-		{
-			if (busyCoroutine is not null)
-			{
-				StopCoroutine(busyCoroutine);
-				busyCoroutine = null;
-			}
+		private Coroutine busyCoroutine;
 
-			busyCoroutine = StartCoroutine(BusyCoroutine());
+		// private IEnumerator BusyCoroutine()
+		// {
+		// 	IsBusy = true;
+		//
+		// 	yield return new WaitUntil(() => !IsAnyNodeFalling());
+		// 	yield return new WaitForSeconds(0.75f);
+		// 	yield return new WaitUntil(() => !IsAnyNodeFalling());
+		//
+		// 	IsBusy = false;
+		// }
+		//
+		// private void Busy()
+		// {
+		// 	if (busyCoroutine is not null)
+		// 	{
+		// 		StopCoroutine(busyCoroutine);
+		// 		busyCoroutine = null;
+		// 	}
+		//
+		// 	busyCoroutine = StartCoroutine(BusyCoroutine());
+		// }
+
+		private async void Busy()
+		{
+			IsBusy = true;
+			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+			await UniTask.WaitForSeconds(0.75f);
+			await UniTask.WaitUntil(() => !IsAnyNodeFalling());
+			IsBusy = false;
 		}
 
 		#region Match3
@@ -119,7 +140,6 @@ namespace GridSystem
 			if (task is null)
 			{
 				Busy();
-
 				return;
 			}
 
@@ -129,10 +149,16 @@ namespace GridSystem
 				busyCoroutine = null;
 			}
 
-			await (UniTask)task;
+			try
+			{
+				await ((UniTask)task);
 
-			await UniTask.Yield();
-			await FallAndFill();
+				await UniTask.Yield();
+				await FallAndFill();
+			}
+			catch (OperationCanceledException e)
+			{
+			}
 		}
 
 		private (List<Node> nodes, List<NodeTile> tiles) FindMatch3(Node node, TileType tileType, ref List<Node> traversedNodes)
@@ -165,9 +191,9 @@ namespace GridSystem
 						if (neighbourNode.Obstacle) continue;
 
 						var coor = tileCoordinates[i] - dirs[j];
-
-						if (!neighbourNode.GetTile(coor)) continue;
-						if (neighbourNode.GetTile(coor).TileType != tileType) continue;
+						var neighbourTile = neighbourNode.GetTile(coor);
+						if (!neighbourTile) continue;
+						if (neighbourTile.TileType != tileType) continue;
 
 						var match3 = FindMatch3(neighbourNode, tileType, ref traversedNodes);
 						tileList.AddRangeIfNotContains(match3.tiles);
@@ -214,8 +240,16 @@ namespace GridSystem
 		private async UniTask FallAndFill()
 		{
 			Fall();
-			await UniTask.Yield(PlayerLoopTiming.Update);
-			await Fill();
+			await UniTask.Yield();
+
+			try
+			{
+				await Fill().AttachExternalCancellation(destroyCancellation.Token);
+			}
+			catch (OperationCanceledException _)
+			{
+			}
+
 			await UniTask.Yield();
 
 			CheckBlastAfterFalling();

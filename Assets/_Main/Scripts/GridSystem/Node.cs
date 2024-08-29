@@ -156,8 +156,6 @@ namespace GridSystem
 
 			await UniTask.Yield();
 			await UniTask.WaitForSeconds(NodeTile.GROW_DURATION);
-			// if (!IsFalling)
-			// 	GridManager.Instance.CheckMatch3(CurrentGridCell);
 		}
 
 		public async UniTask Fall(Vector3 position)
@@ -178,7 +176,7 @@ namespace GridSystem
 				currentPos.z -= Velocity * Time.deltaTime;
 				transform.position = currentPos;
 
-				await UniTask.Yield(cancellationToken: this.GetCancellationTokenOnDestroy());
+				await UniTask.Yield(this.GetCancellationTokenOnDestroy());
 			}
 
 			currentPos.z = position.z;
