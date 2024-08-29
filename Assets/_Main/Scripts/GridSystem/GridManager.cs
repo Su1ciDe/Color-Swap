@@ -230,7 +230,7 @@ namespace GridSystem
 			await UniTask.WaitUntil(() => !node.IsFalling);
 			await UniTask.Yield();
 			HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
-			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION);
+			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION * 2);
 			await UniTask.Yield();
 
 			OnBlast?.Invoke(nodeTiles.Count);

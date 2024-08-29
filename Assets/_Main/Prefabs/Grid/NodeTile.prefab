@@ -75,7 +75,7 @@ MonoBehaviour:
   - {fileID: 1738000184372105410}
   m_UpdateRate: 60
   m_UpdateMode: 3
-  m_Damping: 0.1
+  m_Damping: 0.15
   m_DampingDistrib:
     serializedVersion: 2
     m_Curve:
@@ -172,7 +172,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_Elasticity: 0.15
+  m_Elasticity: 0.075
   m_ElasticityDistrib:
     serializedVersion: 2
     m_Curve: []
@@ -207,7 +207,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_EndLength: 5
+  m_EndLength: 10
   m_EndOffset: {x: 0, y: 0, z: 0}
   m_Gravity: {x: 0, y: 0, z: 0}
   m_Force: {x: 0, y: 0, z: 0}
