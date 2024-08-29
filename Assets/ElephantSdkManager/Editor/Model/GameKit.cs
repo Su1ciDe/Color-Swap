@@ -51,6 +51,18 @@ namespace ElephantSdkManager.Model
         public string helpshiftAppIDAndroid;
         public string helpshiftDomainIos;
         public string helpshiftAppIDIos;
+        public string interstitialHighAdUnitIos;
+        public string interstitialMidAdUnitIos;
+        public string interstitialNormalAdUnitIos;
+        public string rewardedHighAdUnitIos;
+        public string rewardedMidAdUnitIos;
+        public string rewardedNormalAdUnitIos;
+        public string interstitialHighAdUnitAndroid;
+        public string interstitialMidAdUnitAndroid;
+        public string interstitialNormalAdUnitAndroid;
+        public string rewardedHighAdUnitAndroid;
+        public string rewardedMidAdUnitAndroid;
+        public string rewardedNormalAdUnitAndroid;
     }
     
     [Serializable]

@@ -247,7 +247,19 @@ namespace ElephantSdkManager.Util
                 { "FitoRewardedAdUnitIos", gameKitManifest.data.fitoRewardedAdUnitIos },
                 { "FitoBannerAdUnitAndroid", gameKitManifest.data.fitoBannerAdUnitAndroid },
                 { "FitoInterstitialAdUnitAndroid", gameKitManifest.data.fitoInterstitialAdUnitAndroid },
-                { "FitoRewardedAdUnitAndroid", gameKitManifest.data.fitoRewardedAdUnitAndroid }
+                { "FitoRewardedAdUnitAndroid", gameKitManifest.data.fitoRewardedAdUnitAndroid },
+                { "InterstitialHighAdUnitIos", gameKitManifest.data.interstitialHighAdUnitIos },
+                { "InterstitialMidAdUnitIos", gameKitManifest.data.interstitialMidAdUnitIos },
+                { "InterstitialNormalAdUnitIos", gameKitManifest.data.interstitialNormalAdUnitIos },
+                { "RewardedHighAdUnitIos", gameKitManifest.data.rewardedHighAdUnitIos },
+                { "RewardedMidAdUnitIos", gameKitManifest.data.rewardedMidAdUnitIos },
+                { "RewardedNormalAdUnitIos", gameKitManifest.data.rewardedNormalAdUnitIos },
+                { "InterstitialHighAdUnitAndroid", gameKitManifest.data.interstitialHighAdUnitAndroid },
+                { "InterstitialMidAdUnitAndroid", gameKitManifest.data.interstitialMidAdUnitAndroid },
+                { "InterstitialNormalAdUnitAndroid", gameKitManifest.data.interstitialNormalAdUnitAndroid },
+                { "RewardedHighAdUnitAndroid", gameKitManifest.data.rewardedHighAdUnitAndroid },
+                { "RewardedMidAdUnitAndroid", gameKitManifest.data.rewardedMidAdUnitAndroid },
+                { "RewardedNormalAdUnitAndroid", gameKitManifest.data.rewardedNormalAdUnitAndroid }
             };
 
             using (var sw = File.AppendText(rollicAdsPath))

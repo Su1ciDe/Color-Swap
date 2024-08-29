@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: 
   companyName: Fiber Games
-  productName: Project-Template
+  productName: Swap Color!
   productIcon: {fileID: 2800000, guid: 0049bd813b4544af79cb4fe539f26a73, type: 3}
   version: 0.1
-  iOSBundleId: com.fibergames.game
+  iOSBundleId: com.FiberGames.ColorSwap
   teamId: 9JRFGT2VDU
   iOSBuildNo: 0
   androidBundleId: com.fibergames.game
   androidBuildNo: 1
-  facebookId: 0
-  facebookClientToken: 
-  gameId: 
-  gameSecret: 
+  facebookId: 531234655928261
+  facebookClientToken: a018213826872e13e7cd95d0b9228500
+  gameId: 8107ed1620dd652841781cbe382487c9eefbaf84a01e142429aad0e8581154ef
+  gameSecret: b86a3e08989d85fdeaf1e985ee6c313cbf53731a730df3b33baf6eaa9b04673d
   background: {fileID: 0}
   loadingScreenLogo: {fileID: 0}
   loadingScreenTitle: {fileID: 0}
