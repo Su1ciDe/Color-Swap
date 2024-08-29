@@ -1,6 +1,7 @@
 using DG.Tweening;
 using Fiber.Managers;
 using GoalSystem;
+using GridSystem;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ namespace UI
 	{
 		[SerializeField] private TMP_Text txtGoalCount;
 		[SerializeField] private Image imgTileColor;
+		[SerializeField] private Image imgTileAll;
 
 		private Goal currentGoal;
 
@@ -20,7 +22,18 @@ namespace UI
 			currentGoal.OnGoalUpdate += OnGoalUpdated;
 			currentGoal.OnGoalComplete += OnGoalCompleted;
 
-			imgTileColor.color = GameManager.Instance.ColorsSO.Colors[goal.TileType];
+			if (goal.TileType == TileType._8All)
+			{
+				imgTileAll.gameObject.SetActive(true);
+				imgTileColor.gameObject.SetActive(false);
+			}
+			else
+			{
+				imgTileAll.gameObject.SetActive(false);
+				imgTileColor.gameObject.SetActive(true);
+				imgTileColor.color = GameManager.Instance.ColorsSO.Colors[goal.TileType];
+			}
+
 			SetGoalCountText(goal.Count);
 		}
 
