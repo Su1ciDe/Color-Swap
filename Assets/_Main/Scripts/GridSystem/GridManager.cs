@@ -377,6 +377,14 @@ namespace GridSystem
 				nodesToSpawn.Shuffle();
 		}
 
+		[DeclareHorizontalGroup("Spawner")]
+		[System.Serializable]
+		private class Spawner
+		{
+			[Group("Spawner")] public Array2DNode Nodes;
+			[Group("Spawner")] public int Weight;
+		}
+
 		#endregion
 
 		#region Helpers
@@ -553,13 +561,6 @@ namespace GridSystem
 			[Group("Random")] public int Weight;
 		}
 
-		[DeclareHorizontalGroup("Spawner")]
-		[System.Serializable]
-		private class Spawner
-		{
-			[Group("Spawner")] public Array2DNode Nodes;
-			[Group("Spawner")] public int Weight;
-		}
 #endif
 
 		[System.Serializable]
