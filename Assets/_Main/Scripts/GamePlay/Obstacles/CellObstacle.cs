@@ -77,9 +77,7 @@ namespace GamePlay.Obstacles
 		public override void OnBlastNear(Node node)
 		{
 			base.OnBlastNear(node);
-
-			// particle
-
+			
 			DestroyObstacle();
 		}
 
