@@ -43,7 +43,7 @@ namespace GridSystem
 		private readonly List<Node> nodesToSpawn = new List<Node>();
 		private List<int> randomWeights = new List<int>();
 		private bool isFirstSpawn = true;
-		
+
 		private readonly List<Node> spawnerNodes = new List<Node>();
 		private List<int> spawnerRandomWeights;
 
@@ -298,7 +298,8 @@ namespace GridSystem
 					else
 						node.Fall(gridCells[x, emptyY].transform.position);
 
-					GetFallingNodes(node);
+					if (node is Node fallingNode)
+						AddToFallingNodes(fallingNode);
 				}
 			}
 
@@ -334,30 +335,21 @@ namespace GridSystem
 			}
 		}
 
-		private async void GetFallingNodes(INode node)
-		{
-			await UniTask.Yield();
-
-			if (node.IsFalling)
-				fallingNodes.Add(node);
-		}
-
 		public void AddToFallingNodes(Node node)
 		{
 			fallingNodes.AddIfNotContains(node);
 		}
 
-		private void CheckBlastAfterFalling()
+		private async void CheckBlastAfterFalling()
 		{
 			IsBusy = true;
+
+			await UniTask.WaitUntil(() => !IsAnyNodeRearranging());
 
 			for (int i = 0; i < fallingNodes.Count; i++)
 			{
 				if (fallingNodes[i] is not null && fallingNodes[i] is Node node && !node.Obstacle)
-				{
-					// Debug.Log("check fall", fallingNodes[i].GetTransform());
 					CheckMatch3(node);
-				}
 			}
 
 			fallingNodes.Clear();
@@ -430,6 +422,20 @@ namespace GridSystem
 				for (int y = 0; y < size.y; y++)
 				{
 					if (gridCells[x, y] && ((gridCells[x, y].CurrentNode && gridCells[x, y].CurrentNode.IsFalling) || (gridCells[x, y].CurrentObstacle && gridCells[x, y].CurrentObstacle.IsFalling)))
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool IsAnyNodeRearranging()
+		{
+			for (int x = 0; x < size.x; x++)
+			{
+				for (int y = 0; y < size.y; y++)
+				{
+					if (gridCells[x, y] && (gridCells[x, y].CurrentNode && gridCells[x, y].CurrentNode.IsRearranging))
 						return true;
 				}
 			}

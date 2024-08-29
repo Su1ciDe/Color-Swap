@@ -85,9 +85,7 @@ namespace GridSystem
 
 				Node.OnTileBlast(this);
 
-				// transform.DOShakeRotation(BLAST_DURATION, 10 * Vector3.up, 25, 0, false, ShakeRandomnessMode.Harmonic).SetEase(Ease.InQuart);
 				var seq = DOTween.Sequence();
-
 				seq.Append(transform.DOScale(GROW_SCALE * transform.localScale, BLAST_DURATION).SetEase(Ease.OutExpo));
 				seq.AppendCallback(() =>
 				{

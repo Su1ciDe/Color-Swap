@@ -156,12 +156,12 @@ namespace GridSystem
 				}
 			}
 
+			GridManager.Instance.AddToFallingNodes(this);
+
 			IsRearranging = false;
 
 			await UniTask.Yield();
 			await UniTask.WaitForSeconds(NodeTile.GROW_DURATION);
-			
-			GridManager.Instance.AddToFallingNodes(this);
 		}
 
 		public async UniTask Fall(Vector3 position)
