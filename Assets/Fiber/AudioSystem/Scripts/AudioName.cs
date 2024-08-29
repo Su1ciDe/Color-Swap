@@ -18,5 +18,6 @@ namespace Fiber.AudioSystem
 		Pop3,
 		Coin,
 		Swoosh,
+		Blast,
 	}
 }

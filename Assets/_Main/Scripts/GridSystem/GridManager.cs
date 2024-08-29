@@ -41,7 +41,9 @@ namespace GridSystem
 		[SerializeField] private Spawner[] spawner;
 
 		private readonly List<Node> nodesToSpawn = new List<Node>();
+		private List<int> randomWeights = new List<int>();
 		private bool isFirstSpawn = true;
+		
 		private readonly List<Node> spawnerNodes = new List<Node>();
 		private List<int> spawnerRandomWeights;
 
@@ -49,7 +51,7 @@ namespace GridSystem
 
 		private const int BLAST_COUNT = 3;
 
-		private CancellationTokenSource destroyCancellation = new CancellationTokenSource();
+		// private CancellationTokenSource destroyCancellation = new CancellationTokenSource();
 		// private CancellationTokenSource inputCancellation = new CancellationTokenSource();
 
 		public static event UnityAction<int> OnBlast;
@@ -73,7 +75,7 @@ namespace GridSystem
 		{
 			StopAllCoroutines();
 
-			destroyCancellation.Cancel();
+			// destroyCancellation.Cancel();
 			// destroyCancellation.Dispose();
 		}
 
@@ -238,9 +240,9 @@ namespace GridSystem
 			await UniTask.Yield();
 
 			HapticManager.Instance.PlayHaptic(HapticPatterns.PresetType.RigidImpact);
-			AudioManager.Instance.PlayAudio(AudioName.Pop3);
+			AudioManager.Instance.PlayAudio(AudioName.Blast);
 
-			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION * 2);
+			await UniTask.WaitForSeconds(NodeTile.BLAST_DURATION * 2, cancellationToken: destroyCancellationToken);
 			await UniTask.Yield();
 
 			OnBlast?.Invoke(nodeTiles.Count);
@@ -249,17 +251,16 @@ namespace GridSystem
 		private async UniTask FallAndFill()
 		{
 			Fall();
-			await UniTask.Yield();
 
 			try
 			{
-				await Fill().AttachExternalCancellation(destroyCancellation.Token);
+				await UniTask.Yield();
+				await Fill().AttachExternalCancellation(destroyCancellationToken);
+				await UniTask.Yield();
 			}
 			catch (OperationCanceledException _)
 			{
 			}
-
-			await UniTask.Yield();
 
 			CheckBlastAfterFalling();
 		}
@@ -380,7 +381,7 @@ namespace GridSystem
 			}
 			else
 			{
-				node = nodesToSpawn.WeightedRandom(spawnerRandomWeights);
+				node = nodesToSpawn.PickWeightedRandom(ref randomWeights);
 			}
 
 			node.gameObject.SetActive(true);
@@ -394,6 +395,8 @@ namespace GridSystem
 				var node = Instantiate(spawnerNodes[i], transform);
 				nodesToSpawn.Add(node);
 			}
+
+			randomWeights = new List<int>(spawnerRandomWeights);
 		}
 
 		[DeclareHorizontalGroup("Spawner")]
