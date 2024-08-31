@@ -46,8 +46,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   randomizeAfterRotation: 1
   Levels:
+  - {fileID: 7385054679073475628, guid: fb1721b6be6ee8548ab13686a56b08aa, type: 3}
+  - {fileID: 7385054679073475628, guid: 2bde51eac7aabd047b9241295cdca980, type: 3}
   - {fileID: 7385054679073475628, guid: 4ebaee0d86964404f8d6c503f0704368, type: 3}
-  - {fileID: 7385054679073475628, guid: 2b90a33c5bda5094d9f3351d9e92aef3, type: 3}
-  - {fileID: 7385054679073475628, guid: cab83bc1c172130418a2529a65c7a82d, type: 3}
-  - {fileID: 7385054679073475628, guid: e7e92a6375afeda48b81b9113a15609f, type: 3}
+  - {fileID: 7385054679073475628, guid: 6dc4183f598afce4397e22673747005f, type: 3}
+  - {fileID: 7385054679073475628, guid: 0509b7975faa76a4487a8115f447abec, type: 3}
+  - {fileID: 7385054679073475628, guid: 1c48ea2ea79dcb94bb4bf1ef28a53512, type: 3}
+  - {fileID: 7385054679073475628, guid: 14f4f1e3acf19964e8f1c9f98fe23e45, type: 3}
+  - {fileID: 7385054679073475628, guid: b1aaa12837151de4b9fec5f18dc43105, type: 3}
+  - {fileID: 7385054679073475628, guid: 26be26a3a79b84541825d19313024b75, type: 3}
+  - {fileID: 7385054679073475628, guid: 0515a0537f4384e4e8ecbce59c330f1d, type: 3}
+  - {fileID: 7385054679073475628, guid: fecebd3343070f347a681aa16cbb3854, type: 3}
+  - {fileID: 7385054679073475628, guid: bea4a0443988cf84282de0fc1726bdb4, type: 3}
+  - {fileID: 7385054679073475628, guid: d8cccb53859142342a004330529e8719, type: 3}
+  - {fileID: 7385054679073475628, guid: bc0bec386bc9f6c4493c9483b41ed88a, type: 3}
+  - {fileID: 7385054679073475628, guid: 56365d70dc7c7b743a15d0c9ca0c442d, type: 3}
   TutorialLevels: []
