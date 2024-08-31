@@ -49,3 +49,11 @@ MonoBehaviour:
     Prefab: {fileID: 1146961906002798, guid: 41b2f4ed5a5ecfc4e88d7f3f64234f6a, type: 3}
     Size: 50
     AutoDeactivate: 1
+  - Tag: Ice
+    Prefab: {fileID: 164832, guid: f17eae613c6e87a42ac83c2ea5932781, type: 3}
+    Size: 10
+    AutoDeactivate: 1
+  - Tag: Wood
+    Prefab: {fileID: 164832, guid: 5489385e2a0059c4e82ee2927037a571, type: 3}
+    Size: 10
+    AutoDeactivate: 1

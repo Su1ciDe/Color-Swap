@@ -19,5 +19,7 @@ namespace Fiber.AudioSystem
 		Coin,
 		Swoosh,
 		Blast,
+		Ice,
+		Wood,
 	}
 }
