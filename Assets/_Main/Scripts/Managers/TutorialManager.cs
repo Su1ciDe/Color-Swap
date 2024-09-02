@@ -180,7 +180,7 @@ namespace Managers
 			await UniTask.Yield();
 
 			Player.Instance.Inputs.CanInput = false;
-
+			DeckUI.Instance.SetEnableNextButton(true);
 			var btn = DeckUI.Instance.BtnNext;
 
 			tutorialUI.ShowFocus(btn.transform.position);
