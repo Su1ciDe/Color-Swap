@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using Fiber.Managers;
 using Fiber.Utilities;
 using Fiber.AudioSystem;
+using Fiber.LevelSystem;
 using Fiber.Utilities.Extensions;
 using Interfaces;
 using Lofelt.NiceVibrations;
@@ -129,6 +130,8 @@ namespace GridSystem
 
 		public async UniTask CheckMatch3(Node node)
 		{
+			if (StateManager.Instance.CurrentState != GameState.OnStart) return;
+			
 			UniTask? task = null;
 
 			var tempTiles = new Dictionary<TileType, List<Vector2Int>>(node.TilesDictionary);
