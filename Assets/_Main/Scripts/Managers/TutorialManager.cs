@@ -1,6 +1,4 @@
-using System;
-using System.Threading;
-using Cysharp.Threading.Tasks;
+using System.Collections;
 using DeckSystem;
 using Fiber.UI;
 using Fiber.Managers;
@@ -15,8 +13,6 @@ namespace Managers
 	public class TutorialManager : MonoBehaviour
 	{
 		private TutorialUI tutorialUI => TutorialUI.Instance;
-
-		private CancellationTokenSource unsubCancellationToken = new CancellationTokenSource();
 
 		private void OnEnable()
 		{
@@ -44,7 +40,7 @@ namespace Managers
 		{
 			if (LoadingPanelController.Instance && LoadingPanelController.Instance.IsActive)
 			{
-				WaitLoadingScreen();
+				StartCoroutine(WaitLoadingScreen());
 			}
 			else
 			{
@@ -54,7 +50,6 @@ namespace Managers
 
 		private void Unsub()
 		{
-			unsubCancellationToken.Cancel();
 			StopAllCoroutines();
 
 			if (TutorialUI.Instance)
@@ -68,15 +63,9 @@ namespace Managers
 			Deck.OnNextNode -= Level2OnNextNode;
 		}
 
-		private async void WaitLoadingScreen()
+		private IEnumerator WaitLoadingScreen()
 		{
-			try
-			{
-				await new WaitUntilAction(ref LoadingPanelController.Instance.OnLoadingFinished).ToUniTask(cancellationToken: unsubCancellationToken.Token);
-			}
-			catch (OperationCanceledException _)
-			{
-			}
+			yield return new WaitUntilAction(ref LoadingPanelController.Instance.OnLoadingFinished);
 
 			LevelStart();
 		}
@@ -85,85 +74,69 @@ namespace Managers
 		{
 			if (LevelManager.Instance.LevelNo.Equals(1))
 			{
-				Level1Tutorial();
+				StartCoroutine(Level1Tutorial());
 			}
 
 			if (LevelManager.Instance.LevelNo.Equals(2))
 			{
-				Level2Tutorial();
+				StartCoroutine(Level2Tutorial());
 			}
 		}
 
 		#region Level1 Tutorial
 
-		private async void Level1Tutorial()
+		private IEnumerator Level1Tutorial()
 		{
-			await UniTask.Yield();
+			yield return null;
 
 			Player.Instance.Inputs.CanInput = false;
 			DeckUI.Instance.SetEnableNextButton(false);
 
 			var cell = GridManager.Instance.GridCells[1, 2];
 
-			tutorialUI.ShowTap(cell.transform.position, Camera.main);
+			tutorialUI.ShowTap(cell.transform.position, Helper.MainCamera);
 			tutorialUI.ShowText("Tap to Swap tiles!");
 
 			tutorialUI.SetupFakeButton(() =>
 			{
 				Deck.Instance.Swap(cell.CurrentNode);
-				Level1OnSwapped();
-			}, cell.transform.position, Camera.main);
+				StartCoroutine(Level1OnSwapped());
+			}, cell.transform.position, Helper.MainCamera);
 		}
 
-		private async void Level1OnSwapped()
+		private IEnumerator Level1OnSwapped()
 		{
 			tutorialUI.HideFakeButton();
 			tutorialUI.HideText();
 			tutorialUI.HideHand();
-			try
-			{
-				await UniTask.WaitForSeconds(2, cancellationToken: unsubCancellationToken.Token);
-			}
-			catch (OperationCanceledException _)
-			{
-			}
+
+			yield return new WaitForSeconds(2);
 
 			var cell = GridManager.Instance.GridCells[1, 2];
 
-			tutorialUI.ShowTap(cell.transform.position, Camera.main);
+			tutorialUI.ShowTap(cell.transform.position, Helper.MainCamera);
 			tutorialUI.ShowText("Match 3+ colors!");
-			tutorialUI.ShowFocus(Deck.Instance.transform.position, Camera.main);
+			tutorialUI.ShowFocus(Deck.Instance.transform.position, Helper.MainCamera);
 
 			tutorialUI.SetupFakeButton(() =>
 			{
 				Deck.Instance.Swap(cell.CurrentNode);
 				Level1OnSwapped2();
-			}, cell.transform.position, Camera.main);
+			}, cell.transform.position, Helper.MainCamera);
 		}
 
-		private async void Level1OnSwapped2()
+		private IEnumerator Level1OnSwapped2()
 		{
 			tutorialUI.HideFakeButton();
 			tutorialUI.HideText();
 			tutorialUI.HideHand();
 
-			try
-			{
-				await UniTask.WaitForSeconds(5, cancellationToken: unsubCancellationToken.Token);
-			}
-			catch (OperationCanceledException _)
-			{
-			}
+			yield return new WaitForSeconds(5);
 
 			tutorialUI.ShowFocus(GoalUI.Instance.transform.position);
 			tutorialUI.ShowText("Complete the goals!");
-			try
-			{
-				await UniTask.WaitForSeconds(2, cancellationToken: unsubCancellationToken.Token);
-			}
-			catch (OperationCanceledException _)
-			{
-			}
+
+			yield return new WaitForSeconds(2);
 
 			tutorialUI.HideText();
 			tutorialUI.HideFocus();
@@ -175,9 +148,9 @@ namespace Managers
 
 		#region level2 tutorial
 
-		private async void Level2Tutorial()
+		private IEnumerator Level2Tutorial()
 		{
-			await UniTask.Yield();
+			yield return null;
 
 			Player.Instance.Inputs.CanInput = false;
 			DeckUI.Instance.SetEnableNextButton(true);
@@ -198,21 +171,15 @@ namespace Managers
 			tutorialUI.HideText();
 			tutorialUI.HideHand();
 
-			Level2DeckUI();
+			StartCoroutine(Level2DeckUI());
 		}
 
-		private async void Level2DeckUI()
+		private IEnumerator Level2DeckUI()
 		{
 			tutorialUI.ShowFocus(DeckUI.Instance.BtnNext.transform.position);
 			tutorialUI.ShowText("If you empty your deck, You lose!");
 
-			try
-			{
-				await UniTask.WaitForSeconds(2.5f, cancellationToken: unsubCancellationToken.Token);
-			}
-			catch (OperationCanceledException _)
-			{
-			}
+			yield return new WaitForSeconds(2.5f);
 
 			tutorialUI.HideFocus();
 			tutorialUI.HideText();
