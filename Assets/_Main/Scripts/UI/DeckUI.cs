@@ -17,14 +17,11 @@ namespace UI
 		private void Awake()
 		{
 			btnNext.onClick.AddListener(NextButtonClicked);
-		}
 
-		private void OnEnable()
-		{
 			LevelManager.OnLevelStart += OnLevelStarted;
 		}
 
-		private void OnDisable()
+		private void OnDestroy()
 		{
 			LevelManager.OnLevelStart -= OnLevelStarted;
 		}
@@ -39,7 +36,7 @@ namespace UI
 		{
 			transform.DOComplete();
 			transform.DOScale(0.75f, .1f).SetEase(Ease.InOutExpo).SetLoops(2, LoopType.Yoyo);
-			
+
 			btnNext.interactable = false;
 			Player.Instance.Inputs.CanInput = false;
 
@@ -55,8 +52,7 @@ namespace UI
 		{
 			txtNodesInDeckCount.SetText(count.ToString());
 
-			if (count <= 3)
-				txtNodesInDeckCount.color = Color.red;
+			txtNodesInDeckCount.color = count <= 3 ? Color.red : Color.white;
 		}
 	}
 }

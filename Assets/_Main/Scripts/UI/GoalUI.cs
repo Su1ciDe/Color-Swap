@@ -11,7 +11,7 @@ namespace UI
 		[SerializeField] private RectTransform goalContainer;
 		[SerializeField] private GoalItemUI goalItemUIPrefab;
 
-		private void OnEnable()
+		private void Awake()
 		{
 			LevelManager.OnLevelLoad += OnLevelLoaded;
 			LevelManager.OnLevelUnload += OnLevelUnloaded;
