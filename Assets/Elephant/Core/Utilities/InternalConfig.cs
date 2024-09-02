@@ -26,6 +26,7 @@ namespace ElephantSDK
         public bool request_logic_enabled;
         public bool reachability_check_enabled;
         public bool memory_usage_enabled;
+        public bool elephant_disabled;
 
         private InternalConfig()
         {
@@ -49,6 +50,7 @@ namespace ElephantSDK
             request_logic_enabled = true;
             reachability_check_enabled = false;
             memory_usage_enabled = false;
+            elephant_disabled = false;
         }
 
         public static InternalConfig GetInstance()

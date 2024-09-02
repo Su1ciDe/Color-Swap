@@ -487,6 +487,8 @@ namespace RollicGames.Advertisements
         {
             if (!IsMediationReady()) return;
             
+            if(ElephantCore.Instance.CheckAdFreePeriod()) return;
+            
             StartCoroutine(loadBannerAsync());
 
             _isBannerAutoShowEnabled = autoShow;
@@ -573,6 +575,7 @@ namespace RollicGames.Advertisements
 
         public void loadInterstitial()
         {
+            if(ElephantCore.Instance.CheckAdFreePeriod()) return;
             RequestInterstitial(_interstitialAdUnit);
         }
 
