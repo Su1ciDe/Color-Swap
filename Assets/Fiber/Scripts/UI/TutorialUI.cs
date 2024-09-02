@@ -3,6 +3,7 @@ using DG.Tweening;
 using Fiber.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 namespace Fiber.UI
 {
@@ -10,9 +11,12 @@ namespace Fiber.UI
 	{
 		[SerializeField] private Image hand;
 		[Space]
+		[SerializeField] private Button fakeButton;
+		[Space]
 		[SerializeField] private TMP_Text messageText;
 		[Space]
 		[SerializeField] private Image focus;
+		[SerializeField] private Image blocker;
 
 		private Vector3 messagePosition;
 
@@ -20,6 +24,8 @@ namespace Fiber.UI
 		private const float HAND_TAP_TIME = .25f;
 
 		private const float FOCUSING_TIME = .5f;
+
+		public event UnityAction OnFakeButtonClicked;
 
 		private void Awake()
 		{
@@ -173,6 +179,29 @@ namespace Fiber.UI
 			focus.DOKill();
 			focus.transform.localScale = Vector3.one;
 			focus.gameObject.SetActive(false);
+		}
+
+		public void SetupFakeButton(UnityAction action, Vector3 position, Camera cam = null)
+		{
+			SetBlocker(true);
+			if (cam) position = cam.WorldToScreenPoint(position);
+
+			fakeButton.transform.position = position;
+			fakeButton.gameObject.SetActive(true);
+			fakeButton.onClick.AddListener(action);
+			fakeButton.onClick.AddListener(() => OnFakeButtonClicked?.Invoke());
+		}
+
+		public void HideFakeButton()
+		{
+			fakeButton.onClick.RemoveAllListeners();
+			fakeButton.gameObject.SetActive(false);
+			SetBlocker(false);
+		}
+
+		public void SetBlocker(bool block)
+		{
+			blocker.gameObject.SetActive(block);
 		}
 	}
 }

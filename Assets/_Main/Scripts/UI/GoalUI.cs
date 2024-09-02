@@ -1,12 +1,13 @@
 using Cysharp.Threading.Tasks;
 using Fiber.Managers;
+using Fiber.Utilities;
 using Fiber.Utilities.Extensions;
 using GoalSystem;
 using UnityEngine;
 
 namespace UI
 {
-	public class GoalUI : MonoBehaviour
+	public class GoalUI : Singleton<GoalUI>
 	{
 		[SerializeField] private RectTransform goalContainer;
 		[SerializeField] private GoalItemUI goalItemUIPrefab;

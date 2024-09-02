@@ -8,6 +8,8 @@ namespace Fiber.UI
 {
 	public class LoadingPanelController : SingletonPersistent<LoadingPanelController>
 	{
+		public bool IsActive { get; set; }
+
 		[Header("General Variables")]
 		[SerializeField] private float minLoadingDuration = 4f;
 		[SerializeField] private float maxLoadingDuration = 5f;
@@ -21,10 +23,13 @@ namespace Fiber.UI
 		[SerializeField] private Image imgLoadingScreen;
 		[SerializeField] private Image imgLoadingScreenTitle;
 
-		public event UnityAction OnLoadingFinished;
+		public UnityAction OnLoadingFinished;
 
-		private void Start()
+		protected override void Awake()
 		{
+			base.Awake();
+
+			IsActive = true;
 			imgFillBar.fillAmount = 0f;
 			loadingPanelParent.SetActive(true);
 
@@ -33,6 +38,8 @@ namespace Fiber.UI
 			imgFillBar.DOFillAmount(1f, _duration).SetEase(loadingEase).SetLink(gameObject).SetTarget(gameObject).OnComplete(() =>
 			{
 				loadingPanelParent.SetActive(false);
+				IsActive = false;
+
 				OnLoadingFinished?.Invoke();
 			});
 		}
