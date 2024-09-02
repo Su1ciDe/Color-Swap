@@ -36,6 +36,7 @@ namespace DeckSystem
 
 		public static event UnityAction<Node, Node> OnSwapStart; // Node current, Node next
 		public static event UnityAction<Node, Node> OnSwapEnd; // Node current, Node next
+		public static event UnityAction<Node> OnNextNode; // Node current, Node next
 
 		private void OnEnable()
 		{
@@ -156,6 +157,8 @@ namespace DeckSystem
 			{
 				await UniTask.WaitForSeconds(moveDuration);
 			}
+			
+			OnNextNode?.Invoke(currentNode);
 
 			Player.Instance.Inputs.CanInput = true;
 		}

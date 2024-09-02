@@ -19,6 +19,8 @@ namespace ElephantSDK
         
         public static IEnumerator ResetSoundWithDelay()
         {
+            if (ElephantCore.Instance.elephantDisabled) 
+                yield break;;
             if (!ElephantCore.Instance.isSoundFixEnabled)
                 yield break;
 
@@ -28,11 +30,13 @@ namespace ElephantSDK
 
         public static void ShowComplianceDialog()
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             ElephantCore.Instance.PinRequest();
         }
 
         public static void ShowSupportView(string subject, string body)
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             subject = Utils.ReplaceEscapeCharsForUrl(subject);
             body = body + "\n\n" + "Elephant ID: " + ElephantCore.Instance.userId + "\nIDFV: " +
                    ElephantCore.Instance.idfv;
@@ -47,6 +51,7 @@ namespace ElephantSDK
                 Debug.LogWarning("Elephant SDK isn't working correctly, make sure you put Elephant prefab into your first scene..");
                 return;
             }
+            if (ElephantCore.Instance.elephantDisabled) return;
 
             if (callback == null)
             {
@@ -59,6 +64,7 @@ namespace ElephantSDK
 
         public static void VerifyPurchase(IapVerifyRequest request, Action<bool> callback)
         {
+            if (ElephantCore.Instance.elephantDisabled) return;
             if (ElephantCore.Instance == null)
             {
                 ElephantLog.LogError("<ELEPHANT>", "Elephant SDK isn't working correctly, make sure you put Elephant prefab into your first scene..");
@@ -75,6 +81,7 @@ namespace ElephantSDK
 
         public static void ShowAlertDialog(string title, string message)
         {
+            if (ElephantCore.Instance.elephantDisabled) return;
 #if UNITY_IOS
             ElephantIOS.showAlertDialog(title, message);
 #elif UNITY_ANDROID
@@ -86,6 +93,7 @@ namespace ElephantSDK
 
         public static void LevelStarted(int level, Params parameters = null)
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             MonitoringUtils.GetInstance().SetCurrentLevel(level, level.ToString());
 
             CustomEvent(LEVEL_STARTED, level, originalLevelId: level.ToString(), param: parameters);
@@ -93,6 +101,7 @@ namespace ElephantSDK
 
         public static void LevelCompleted(int level, Params parameters = null)
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             var currentLevel = MonitoringUtils.GetInstance().GetCurrentLevel();
             var currentTime = Utils.Timestamp();
             var levelTime = currentTime - currentLevel.level_time;
@@ -106,6 +115,7 @@ namespace ElephantSDK
 
         public static void LevelFailed(int level, Params parameters = null)
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             var currentLevel = MonitoringUtils.GetInstance().GetCurrentLevel();
             var currentTime = Utils.Timestamp();
             var levelTime = currentTime - currentLevel.level_time;
@@ -115,11 +125,13 @@ namespace ElephantSDK
 
         public static void Event(string type, int level, Params parameters = null)
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             CustomEvent(type, level, param: parameters);
         }
 
         public static void AdEventV2(string type, string json)
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             if (!AdConfig.GetInstance().ad_callback_logs) return;
 
             var param = Params.New();
@@ -130,6 +142,7 @@ namespace ElephantSDK
 
         public static void RewardedEvent(string eventType, ElephantLevel level, string type, string source, string item, string adUuid, int result = -1, string mediationInfo = "")
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             var parameters = Params.New()
                 .Set("ad_placement_category", type)
                 .Set("ad_placement_source", source)
@@ -142,6 +155,7 @@ namespace ElephantSDK
 
         public static void InterstitialEvent(string eventType, ElephantLevel level, string source, string adUuid, int result = -1, string mediationInfo = "")
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             var parameters = Params.New()
                 .Set("ad_placement_source", source)
                 .Set("mediation_info", mediationInfo + "|" + adUuid)
@@ -158,6 +172,7 @@ namespace ElephantSDK
                 return;
             }
 
+            if (ElephantCore.Instance.elephantDisabled) return;
             var t = TransactionData.CreateTransactionData();
             t.type = type;
             t.level = level;
@@ -177,6 +192,7 @@ namespace ElephantSDK
                 Debug.LogWarning("Elephant SDK isn't working correctly, make sure you put Elephant prefab into your first scene..");
                 return;
             }
+            if (ElephantCore.Instance.elephantDisabled) return;
 
             var adRevenueRequest = AdRevenueRequest.CreateAdRevenueRequest(mopubRevenueData);
 
@@ -191,6 +207,7 @@ namespace ElephantSDK
                 Debug.LogWarning("Elephant SDK isn't working correctly, make sure you put Elephant prefab into your first scene..");
                 return;
             }
+            if (ElephantCore.Instance.elephantDisabled) return;
 
             var adRevenueRequest = AdRevenueRequest.CreateMediationRevenueRequest(mediationRevenueData);
 
@@ -206,6 +223,7 @@ namespace ElephantSDK
                 Debug.LogWarning("Elephant SDK isn't working correctly, make sure you put Elephant prefab into your first scene..");
                 return;
             }
+            if (ElephantCore.Instance.elephantDisabled) return;
 
             var adRevenueRequest = AdRevenueRequest.CreateIronSourceAdRevenueRequest(ironsourceRevenueData);
 
@@ -238,6 +256,7 @@ namespace ElephantSDK
 
         public static void ShowSettingsView()
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
 #if UNITY_EDITOR
 // No-op
 #elif UNITY_IOS
@@ -289,6 +308,7 @@ namespace ElephantSDK
 
         public static void ShowNetworkOfflineDialog()
         {
+            if (ElephantCore.Instance && ElephantCore.Instance.elephantDisabled) return;
             if (!Utils.IsConnected())
             {
                 if (ElephantCore.Instance != null)
