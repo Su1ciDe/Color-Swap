@@ -121,7 +121,7 @@ namespace Managers
 			tutorialUI.SetupFakeButton(() =>
 			{
 				Deck.Instance.Swap(cell.CurrentNode);
-				Level1OnSwapped2();
+				StartCoroutine(Level1OnSwapped2());
 			}, cell.transform.position, Helper.MainCamera);
 		}
 
