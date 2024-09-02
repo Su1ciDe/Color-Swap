@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using DeckSystem;
 using DG.Tweening;
 using Fiber.Managers;
+using Fiber.Utilities;
 using GamePlay.Player;
 using TMPro;
 using UnityEngine;
@@ -9,11 +10,13 @@ using UnityEngine.UI;
 
 namespace UI
 {
-	public class DeckUI : MonoBehaviour
+	public class DeckUI : Singleton<DeckUI>
 	{
 		[SerializeField] private Button btnNext;
 		[SerializeField] private TMP_Text txtNodesInDeckCount;
 
+		public Button BtnNext => btnNext;
+		
 		private void Awake()
 		{
 			btnNext.onClick.AddListener(NextButtonClicked);
@@ -53,6 +56,11 @@ namespace UI
 			txtNodesInDeckCount.SetText(count.ToString());
 
 			txtNodesInDeckCount.color = count <= 3 ? Color.red : Color.white;
+		}
+
+		public void SetEnableNextButton(bool enable)
+		{
+			btnNext.gameObject.SetActive(enable);
 		}
 	}
 }

@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.iOS;
 #endif
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 namespace ElephantSDK
 {
@@ -135,6 +136,7 @@ namespace ElephantSDK
         private bool isOfferProductsReady = false;
 
         public bool isSoundFixEnabled = false;
+        public bool elephantDisabled = false;
 
         void Awake()
         {
@@ -328,6 +330,14 @@ namespace ElephantSDK
             while (openRequestWaiting && (Time.time - startTime) < 5f)
             {
                 yield return null;
+            }
+
+            elephantDisabled = openResponse.internal_config.elephant_disabled;
+            if(elephantDisabled)
+            {
+                ElephantLog.Log("ELEPHANT INIT","ElephantSDK is disabled from the server side");
+                SceneManager.LoadScene(1);
+                yield break;
             }
 
             isUsingRemoteConfig = openRequestSucceded ? 1 : -1;
@@ -1149,6 +1159,21 @@ namespace ElephantSDK
                     evnt?.Invoke();
                 }
             }
+        }
+        
+        private long DaysSinceFirstInstall()
+        {
+            var days = (Utils.Timestamp() - firstInstallTime) / (1000 * 60 * 60 * 24);
+            return days;
+        }
+        
+        public bool CheckAdFreePeriod()
+        {
+            var adFreeDays = RemoteConfig.GetInstance().GetInt("ad_free_days", 1);
+            var daysSinceInstall = DaysSinceFirstInstall();
+            var isAdFreePeriod = daysSinceInstall < adFreeDays;
+
+            return isAdFreePeriod;
         }
     }
 }
