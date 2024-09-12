@@ -176,7 +176,6 @@ namespace Managers
 
 		private IEnumerator Level2DeckUI()
 		{
-			tutorialUI.ShowFocus(DeckUI.Instance.BtnNext.transform.position);
 			tutorialUI.ShowText("If you empty your deck, You lose!");
 
 			yield return new WaitForSeconds(2.5f);
